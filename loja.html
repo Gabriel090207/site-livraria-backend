@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Loja de Livros</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+    }
+    body {
+      background-color: #f9f9f9;
+    }
+    /* barra laranja no topo */
+    header {
+      background: linear-gradient(90deg, #F58220, #ee994f);
+      color: #fff;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: fixed; 
+    width: 100%;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    margin-bottom: 50px;
+    }
+    /* icone do menu */
+    .menu-icon {
+      font-size: 24px;
+      cursor: pointer;
+    }
+    
+/* logo */
+    .logo {
+      margin-left: 10px;
+      font-size: 20px;
+      font-weight: bold;
+    }
+    /* barra de pesquisa */
+    .search-bar {
+      flex: 1;
+      margin: 0 20px;
+    }
+    .search-bar input {
+      width: 100%;
+      padding: 8px;
+      border: none;
+      border-radius: 5px;
+    }
+    /* icones do carrinho e perfil */
+    .header-icons {
+      display: flex;
+      gap: 15px;
+      align-items: center;
+    }
+    .header-icons i {
+      font-size: 20px;
+      cursor: pointer;
+    }
+/* menu */
+    .side-menu {
+      position: fixed;
+      top: 0;
+      left: -300px;
+      width: 250px;
+      height: 100%;
+      background-color: #fff;
+      color: #333;
+      box-shadow: 2px 0 8px rgba(0, 0, 0, 0.2);
+      padding: 20px;
+      transition: left 0.3s ease;
+      z-index: 1001;
+    }
+    .side-menu.open {
+      left: 0;
+    }
+    .side-menu-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .side-menu-header h2 {
+      font-size: 20px;
+      margin: 0;
+    }
+    #close-menu {
+      font-size: 20px;
+      cursor: pointer;
+    }
+    .side-menu ul {
+      list-style: none;
+      padding: 0;
+    }
+    .side-menu ul li {
+      margin: 15px 0;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+    }
+
+    /* barra lateral com filtros etc */
+    .container {
+
+      display: flex;
+      margin: 20px;
+    }
+    .sidebar {
+      margin-top: 80px;
+      position: fixed;
+  top: 20px;
+  height: 100vh;
+  width: 250px;
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 5px rgba(0,0,0,0.1);
+}
+    .sidebar h2 {
+      margin-bottom: 15px;
+      font-size: 18px;
+    }
+    .sidebar ul {
+      list-style: none;
+    }
+    .sidebar ul li {
+      margin-bottom: 10px;
+      cursor: pointer;
+      color: #333;
+    }
+    .school-card {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.school-logo {
+  border-radius: 13px;
+  width: 210px;
+  height: 130px;
+  object-fit: contain;
+  margin: 0 auto 07px;
+  display: block;
+}
+
+.school-name {
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+}
+
+.sidebar label {
+  display: block;
+  margin-top: 15px;
+  font-weight: bold;
+  font-size: 14px;
+  color: #333;
+}
+
+.sidebar select {
+  width: 100%;
+  padding: 6px;
+  margin-top: 5px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+/* informação que aparece depois que clica no perfil */
+    .profile-dropdown {
+      display: none;
+      position: absolute;
+      background-color: white;
+      color: black;
+      right: 20px;
+      top: 60px;
+      border-radius: 5px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+      padding: 10px;
+      z-index: 100;
+    }
+    .profile-dropdown p {
+      margin: 5px 0;
+    }
+
+    /* carrossel com a imagem(ainda nao e carrossel so tem uma imagem) */
+    .content {
+      flex: 1;
+      margin-left: 20px;
+    }
+    .carousel {
+  margin-left: 260px;       
+  margin-top: 80px;
+  display: flex;
+  overflow: hidden;
+
+
+  width: calc(100% - 280px); 
+  max-width: 100%;             
+}
+    .carousel img {
+      width: 100%;
+      max-height: 300px;
+      border-radius: 10px;
+      object-fit: cover;
+    }
+    .carousel button {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background-color: rgba(0,0,0,0.5);
+      color: #fff;
+      border: none;
+      padding: 10px;
+      cursor: pointer;
+      font-size: 18px;
+    }
+    .carousel .prev {
+      left: 10px;
+    }
+    .carousel .next {
+      right: 10px;
+    }
+
+    /* titulo - livros em destaque */
+    .section-title {
+      margin-top: 30PX;
+      margin-left: 270px;
+      font-size: 24px;
+      margin-bottom: 15px;
+      color: #333;
+    }
+    .section-title1 {
+      margin-top: 50px;
+      margin-left: 270px;
+      font-size: 24px;
+      margin-bottom: 15px;
+      color: #333;
+    }
+
+    /* blocos com os livros */
+    .cards {
+      margin-right: 30px;
+    margin-left: 270px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 20px;
+    }
+    .card {
+      background-color: #fff;
+      border: solid 2px black;
+      border-radius: 8px;
+      padding: 20px;
+      text-align: center;
+      transition: transform 0.3s;
+    }
+    .card:hover {
+      transform: scale(1.05);
+    }
+    .card img {
+      width: 70%;
+      height: auto;
+      border-radius: 5px;
+      margin-bottom: 10px;
+    }
+    .card h3 {
+      font-size: 20px;
+      margin-bottom: 5px;
+      color: #333;
+    }
+    .card p {
+      font-size: 16px;
+      margin-bottom: 5px;
+      color: #555;
+    }
+    .card .price {
+      font-size: 22px;
+      color: black;
+      font-weight: bold;
+    }
+
+    /* botao de comprar*/
+    .add-to-cart {
+      background-color: black;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 5px;
+      margin-top: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      transition: background-color 0.3s;
+    }
+    .add-to-cart1 {
+      background-color: black;
+      color: white;
+      border: none;
+      padding: 8px 36px;
+      border-radius: 5px;
+      margin-top: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      transition: background-color 0.3s;
+    }
+    .add-to-cart:hover {
+      background-color: white;
+      color: black;
+      border: solid 2px black;
+    }
+    .add-to-cart1:hover {
+      background-color: white;
+      color: black;
+      border: solid 2px black;
+    }
+    .add-to-cart1 a {
+      text-decoration: none;
+      color: white;
+     
+    }
+    .add-to-cart1:hover a {
+      text-decoration: none;
+      color: black;
+     
+    }
+
+    /* carrinho informações */
+    #cart-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background-color: red;
+  color: white;
+  border-radius: 50%;
+  padding: 2px 6px;
+  font-size: 12px;
+  font-weight: bold;
+  user-select: none;
+  pointer-events: none;
+}
+
+#cart-dropdown {
+  position: absolute;
+  top: 35px;
+  right: 0;
+  width: 300px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  padding: 10px;
+  display: none;
+  z-index: 1500;
+  max-height: 400px;
+  overflow-y: auto;
+  font-size: 14px;
+}
+#cart-dropdown .remove-btn {
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  padding: 4px 8px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+#cart-dropdown .remove-btn:hover {
+  background-color: #c0392b;
+}
+#cart-dropdown .cart-item {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 8px;
+}
+
+#cart-dropdown .cart-item img {
+  width: 50px;
+  height: 70px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+#cart-dropdown .cart-item .info {
+  flex: 1;
+}
+
+#cart-dropdown .cart-item .info h4 {
+  margin: 0 0 5px 0;
+  font-size: 16px;
+  color: #333;
+}
+
+#cart-dropdown .cart-item .info p {
+  margin: 0;
+  color: #666;
+  font-weight: bold;
+}
+li a {
+  text-decoration: none;
+  color: inherit;
+}
+
+  </style>
+</head>
+<body>
+
+ <!-- Menu Lateral -->
+  <div class="side-menu" id="side-menu">
+    <div class="side-menu-header">
+      <h2>Menu</h2>
+      <i class="fas fa-times" id="close-menu"></i>
+    </div>
+    <ul>
+      <li>  <a href="index.html">
+        <i class="fas fa-home"></i> Início
+      </a></li>
+      <li><i class="fas fa-book"></i> Todos os livros</li>
+      <li><i class="fas fa-tags"></i> Promoções</li>
+      <li><i class="fas fa-question-circle"></i> Ajuda</li>
+      <li><i class="fas fa-phone"></i> Contato</li>
+      <li><i class="fas fa-info-circle"></i> Sobre nós</li>
+    </ul>
+  </div>
+
+<!-- Barra de cima -->
+
+  <header>
+    <i class="fas fa-bars menu-icon" id="menu-toggle"></i>
+    <div class="logo">Livraria Web</div>
+    <div class="search-bar">
+      <input type="text" placeholder="Buscar livros...">
+    </div>
+    <div class="header-icons">
+      <i class="fas fa-user" id="userIcon"></i>
+      <div id="profileInfo" class="profile-dropdown">
+        <p><strong>Usuário:</strong> João Silva</p>
+        <p><strong>Escola:</strong> E.E. Antônio de Pádua</p>
+      </div>
+      <div id="cart-container" style="position: relative;">
+        <i class="fas fa-shopping-cart" id="cart-icon" style="cursor: pointer; position: relative;"></i>
+        <span id="cart-badge" style="display:none;">0</span>
+    
+        <div id="cart-dropdown"></div>
+      </div>
+    </div>
+  </header>
+
+<!-- Barra lateral filtro etc -->
+  <div class="container">
+    <nav class="sidebar">
+      <div class="school-card">
+        <h2>Escola</h2>
+        <img src="unesp.png" alt="Logo da Escola" class="school-logo">
+        <h3 class="school-name">UNESP</h3>
+      </div>
+    
+      <h2>Filtrar Livros</h2>
+    
+      <label for="tipo">Categoria:</label>
+      <select id="tipo" class="filter">
+        <option value="">Todos</option>
+        <option value="aventura">Aventura</option>
+        <option value="terror">Terror</option>
+        <option value="biografia">Biografia</option>
+        <option value="ficcao">Ficção</option>
+      </select>
+    
+      <label for="idade">Faixa Etária:</label>
+      <select id="idade" class="filter">
+        <option value="">Todas</option>
+        <option value="infantil">Infantil</option>
+        <option value="juvenil">Juvenil</option>
+        <option value="adulto">Adulto</option>
+      </select>
+    
+      <label for="editora">Editora:</label>
+      <select id="editora" class="filter">
+        <option value="">Todas</option>
+        <option value="intrinseca">Intrínseca</option>
+        <option value="outroplaneta">Outro Planeta</option>
+        <option value="bestbolso">BestBolso</option>
+      </select>
+
+      <label for="editora">Preço:</label>
+      <select id="editora" class="filter">
+        <option value="">Todos</option>
+        <option value="intrinseca">maior</option>
+        <option value="outroplaneta">menor</option>
+        <option value="bestbolso">personalizado</option>
+      </select>
+
+      <label for="editora">Nota:</label>
+      <select id="editora" class="filter">
+        <option value="">Todos</option>
+        <option value="intrinseca">maior</option>
+        <option value="outroplaneta">menor</option>
+        <option value="bestbolso">personalizado</option>
+      </select>
+
+      <label for="editora">Em desconto:</label>
+      <select id="editora" class="filter">
+        <option value="">Todos</option>
+        <option value="intrinseca">maior</option>
+        <option value="outroplaneta">menor</option>
+        <option value="bestbolso">personalizado</option>
+      </select>
+      <label for="editora">Mais vendidos</label>
+      <select id="editora" class="filter">
+        <option value="">Não</option>
+        <option value="intrinseca">sim</option>
+       
+      </select>
+    </nav>
+
+
+
+    <main class="content">
+
+      <!-- Carrossel -->
+      <div class="carousel">
+      
+        <img id="carousel-image" src="Imagen (1).png" alt="Banner">
+
+      </div>
+<!-- titulo  -->
+      <h2 class="section-title">Livros em Destaque</h2>
+
+   
+      <!-- blocos -->
+        
+
+          <div class="cards" >
+            <div class="card">
+              <img src="livro1.png" alt="As Aventuras de Mike">
+              <h3>As Aventuras de Mike</h3>
+              <p>Editora Outro Planeta</p>
+              <p class="price">R$ 42,27</p>
+              <button class="add-to-cart">Adicionar ao carrinho</button>
+            </div>
+            <div class="card">
+              <img src="livro3.png" alt="Five Nights at Freddy's">
+              <h3>Five Nights at Freddy's</h3>
+              <p>Intrínseca</p>
+              <p class="price">R$ 39,92</p>
+              <button class="add-to-cart">Adicionar ao carrinho</button>
+            </div>
+            <div class="card">
+              <img src="livro1.png" alt="As Aventuras de Mike">
+              <h3>As Aventuras de Mike</h3>
+              <p>Editora Outro Planeta</p>
+              <p class="price">R$ 42,27</p>
+              <button class="add-to-cart1"><a href="detalhes.html"> COMPRAR! </a></button><br>
+              
+            </div>
+            <div class="card">
+              <img src="livro2.png" alt="Olhos Prateados">
+              <h3>Olhos Prateados</h3>
+              <p>Intrínseca</p>
+              <p class="price">R$ 47,92</p>
+              <button class="add-to-cart">Adicionar ao carrinho</button>
+            </div>
+           
+
+    
+        
+       
+      </div>
+
+      
+      <h2 class="section-title1">Livros em Destaque</h2>
+      <div class="cards">
+        <div class="card">
+          <img src="livro1.png" alt="As Aventuras de Mike">
+          <h3>As Aventuras de Mike</h3>
+          <p>Editora Outro Planeta</p>
+          <p class="price">R$ 42,27</p>
+          <button class="add-to-cart">Adicionar ao carrinho</button>
+        </div>
+        <div class="card">
+          <img src="livro3.png" alt="Five Nights at Freddy's">
+          <h3>Five Nights at Freddy's</h3>
+          <p>Intrínseca</p>
+          <p class="price">R$ 39,92</p>
+          <button class="add-to-cart">Adicionar ao carrinho</button>
+        </div>
+        <div class="card">
+          <img src="livro2.png" alt="Olhos Prateados">
+          <h3>Olhos Prateados</h3>
+          <p>Intrínseca</p>
+          <p class="price">R$ 47,92</p>
+          <button class="add-to-cart">Adicionar ao carrinho</button>
+        </div>
+        <div class="card">
+          <img src="livro1.png" alt="Diário de Anne Frank">
+          <h3>Diário de Anne Frank</h3>
+          <p>Editora BestBolso</p>
+          <p class="price">R$ 31,92</p>
+          <button class="add-to-cart">Adicionar ao carrinho</button>
+        </div>
+      </div>
+      <h2 class="section-title1">Livros em Destaque</h2>
+      <div class="cards">
+        <div class="card">
+          <img src="livro1.png" alt="As Aventuras de Mike">
+          <h3>As Aventuras de Mike</h3>
+          <p>Editora Outro Planeta</p>
+          <p class="price">R$ 42,27</p>
+          <button class="add-to-cart">Adicionar ao carrinho</button>
+        </div>
+          <div class="card">
+          <img src="livro1.png" alt="As Aventuras de Mike">
+          <h3>As Aventuras de Mike</h3>
+          <p>Editora Outro Planeta</p>
+          <p class="price">R$ 42,27</p>
+          <button class="add-to-cart">Adicionar ao carrinho</button>
+        </div>
+        <div class="card">
+          <img src="livro3.png" alt="Five Nights at Freddy's">
+          <h3>Five Nights at Freddy's</h3>
+          <p>Intrínseca</p>
+          <p class="price">R$ 39,92</p>
+          <button class="add-to-cart">Adicionar ao carrinho</button>
+        </div>
+        <div class="card">
+          <img src="livro2.png" alt="Olhos Prateados">
+          <h3>Olhos Prateados</h3>
+          <p>Intrínseca</p>
+          <p class="price">R$ 47,92</p>
+          <button class="add-to-cart">Adicionar ao carrinho</button>
+        </div>
+      
+      </div>
+      <h2 class="section-title1">Livros em Destaque</h2>
+      <div class="cards">
+        <div class="card">
+          <img src="livro1.png" alt="As Aventuras de Mike">
+          <h3>As Aventuras de Mike</h3>
+          <p>Editora Outro Planeta</p>
+          <p class="price">R$ 42,27</p>
+          <button class="add-to-cart">Adicionar ao carrinho</button>
+        </div>
+        <div class="card">
+          <img src="livro3.png" alt="Five Nights at Freddy's">
+          <h3>Five Nights at Freddy's</h3>
+          <p>Intrínseca</p>
+          <p class="price">R$ 39,92</p>
+          <button class="add-to-cart">Adicionar ao carrinho</button>
+        </div>
+        <div class="card">
+          <img src="livro2.png" alt="Olhos Prateados">
+          <h3>Olhos Prateados</h3>
+          <p>Intrínseca</p>
+          <p class="price">R$ 47,92</p>
+          <button class="add-to-cart">Adicionar ao carrinho</button>
+        </div>
+        <div class="card">
+          <img src="livro1.png" alt="Diário de Anne Frank">
+          <h3>Diário de Anne Frank</h3>
+          <p>Editora BestBolso</p>
+          <p class="price">R$ 31,92</p>
+          <button class="add-to-cart">Adicionar ao carrinho</button>
+        </div>
+      </div>
+    
+    </main>
+  </div>
+
+
+  <script>
+    // Menu lateral
+    const menuIcon = document.querySelector('.menu-icon');
+    const sideMenu = document.getElementById('side-menu');
+    const closeMenu = document.getElementById('close-menu');
+  
+    menuIcon?.addEventListener('click', () => {
+      sideMenu.classList.add('open');
+    });
+  
+    closeMenu?.addEventListener('click', () => {
+      sideMenu.classList.remove('open');
+    });
+  
+    // Perfil do usuário
+    const userIcon = document.getElementById('userIcon');
+    const profileInfo = document.getElementById('profileInfo');
+  
+    userIcon?.addEventListener('click', () => {
+      profileInfo.style.display = profileInfo.style.display === 'block' ? 'none' : 'block';
+    });
+  
+    // Esconde o dropdown se clicar fora
+    document.addEventListener('click', (e) => {
+      if (!profileInfo.contains(e.target) && !userIcon.contains(e.target)) {
+        profileInfo.style.display = 'none';
+      }
+    });
+  </script>
+  
+
+ 
+  <script>
+    const cartKey = 'meuCarrinho';
+    let cart = JSON.parse(localStorage.getItem(cartKey)) || [];
+  
+    function saveCart() {
+      localStorage.setItem(cartKey, JSON.stringify(cart));
+    }
+  
+    function updateCartUI() {
+      const badge = document.getElementById('cart-badge');
+      const dropdown = document.getElementById('cart-dropdown');
+  
+      if (!badge || !dropdown) return;
+  
+      if (cart.length === 0) {
+        badge.style.display = 'none';
+        dropdown.innerHTML = '<p>Carrinho vazio</p>';
+        saveCart();
+        return;
+      }
+  
+      badge.style.display = 'inline-block';
+      badge.textContent = cart.length;
+  
+      dropdown.innerHTML = '';
+  
+      cart.forEach((item, index) => {
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'cart-item';
+  
+        itemDiv.innerHTML = `
+          <img src="${item.img}" alt="${item.name}">
+          <div class="info">
+            <h4>${item.name}</h4>
+            <p>${item.price}</p>
+            <button class="remove-btn" data-index="${index}">Remover</button>
+          </div>
+        `;
+        dropdown.appendChild(itemDiv);
+      });
+  
+      const finishBtn = document.createElement('button');
+      finishBtn.textContent = 'Finalizar Compra';
+      finishBtn.style.cssText = `
+        width: 100%; padding: 10px; background: #333; color: white;
+        border: none; border-radius: 5px; cursor: pointer; margin-top: 10px;
+      `;
+  
+      finishBtn.addEventListener('click', () => {
+        window.location.href = 'checkout.html';
+       
+        
+
+      });
+  
+      dropdown.appendChild(finishBtn);
+  
+      document.querySelectorAll('.remove-btn').forEach(btn => {
+        btn.addEventListener('click', e => {
+          const idx = e.target.getAttribute('data-index');
+          cart.splice(idx, 1);
+          updateCartUI();
+        });
+      });
+  
+      saveCart();
+    }
+  
+    // Página com VÁRIOS livros (cards)
+    document.querySelectorAll('.card .add-to-cart').forEach(button => {
+      button.addEventListener('click', () => {
+        const card = button.closest('.card');
+        const img = card.querySelector('img').src;
+        const name = card.querySelector('h3').textContent;
+        const price = card.querySelector('.price').textContent;
+  
+        cart.push({ img, name, price });
+        updateCartUI();
+      });
+    });
+  
+    // Página INDIVIDUAL do livro
+    const individualBtn = document.querySelector('.container1 .add-to-cart');
+    if (individualBtn) {
+      individualBtn.addEventListener('click', () => {
+        const name = document.querySelector('.product-details h1').textContent;
+        const img = document.querySelector('.product-image img').src;
+        const price = document.querySelector('.product-details .price').textContent;
+  
+        cart.push({ img, name, price });
+        updateCartUI();
+      });
+    }
+  
+    // Dropdown do carrinho
+    const cartIcon = document.getElementById('cart-icon');
+    const cartDropdown = document.getElementById('cart-dropdown');
+  
+    if (cartIcon && cartDropdown) {
+      cartIcon.addEventListener('click', () => {
+        if (cartDropdown.style.display === 'block') {
+          cartDropdown.style.display = 'none';
+        } else {
+          updateCartUI();
+          cartDropdown.style.display = 'block';
+        }
+      });
+  
+      document.addEventListener('click', (e) => {
+        if (!cartIcon.contains(e.target) && !cartDropdown.contains(e.target)) {
+          cartDropdown.style.display = 'none';
+        }
+      });
+    }
+  
+    // Inicializa
+    updateCartUI();
+  </script>
+
+  
+</body>
+</html>

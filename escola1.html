@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Login</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Open Sans', sans-serif;
+    }
+
+    body {
+      background:#fff8f8;
+      color: #fff;
+    }
+
+    .navbar {
+      background: #F58220;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .navbar .logo {
+      display: flex;
+      align-items: center;
+      color: black;
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .navbar .logo span {
+      color: orange;
+      font-weight: bold;
+    }
+
+    .navbar > ul {
+      list-style: none;
+      display: flex;
+      gap: 20px;
+    }
+
+    .navbar ul li {
+      position: relative;
+    }
+
+    .dropdown-menu {
+      display: none;
+      position: absolute;
+      top: 100%;
+      background-color: white;
+      min-width: 160px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+      z-index: 1000;
+    }
+
+    .dropdown-menu li {
+      display: block;
+    }
+
+    .dropdown-menu li a {
+      padding: 10px;
+      display: block;
+      color: black;
+      text-decoration: none;
+    }
+
+    .dropdown:hover .dropdown-menu {
+      display: block;
+    }
+
+    .dropdown-menu li a:hover {
+      background-color: #f0f0f0;
+    }
+
+    .navbar ul li a {
+      color: black;
+      text-decoration: none;
+      padding: 5px 10px;
+    }
+
+    .navbar ul li a.active,
+    .navbar ul li a:hover {
+      background: #000;
+      color: #fff;
+    }
+
+    /* NOVO ESTILO - SEÇÃO BUSCAR ESCOLA COM FUNDO */
+    #buscar-escola {
+      background: #fff8f8;
+      padding: 20px 60px 40px;
+      text-align: center;
+    }
+
+    /* Barra de pesquisa centralizada */
+    .search-container {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 30px;
+      width: 100%;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .search-container input[type="text"] {
+      width: 100%;
+      padding: 12px 20px;
+      font-size: 18px;
+      border-radius: 13px;
+      background-color: whi;
+      border: 1px solid #F58220;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      transition: box-shadow 0.3s;
+      font-family: 'Open Sans', sans-serif;
+    }
+
+    .search-container input[type="text"]:focus {
+      box-shadow: 0 6px 10px rgba(0,0,0,0.2);
+      outline: none;
+    }
+
+    /* Grid dos cards */
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 70px;
+      margin-top: 0;
+      margin-left: 70px;
+      margin-right: 30px;
+    }
+
+    .product-card {
+      background-color: white;
+      border-radius: 13px;
+      box-shadow: 
+        0 15px 70px rgba(0, 0, 0, 0.25), 
+        0 4px 8px rgba(0, 0, 0, 0.15);
+      overflow: hidden;
+      transition: transform 0.3s, box-shadow 0.3s;
+      cursor: pointer;
+      position: relative;
+      text-align: center;
+      border: solid 2px #F58220;
+    }
+
+    .product-card:hover {
+      transform: scale(1.05);
+      box-shadow: 
+        0 16px 70px rgba(0, 0, 0, 0.35), 
+        0 8px 16px rgba(0, 0, 0, 0.25);
+    }
+
+    .product-card img {
+      width: 90%;
+      height: 300px;
+      object-fit: cover;
+      margin: 10px auto;
+      border-radius: 13px;
+      border: solid 2px #F58220;
+      display: block;
+    }
+
+    .product-card h2 {
+      margin: 10px 0 5px;
+      font-size: 22px;
+      color: black;
+    }
+
+    .product-card p {
+      color: black;
+      font-size: 18px;
+      margin-top: 5px;
+    }
+
+    .product-card .price span {
+      color: black;
+      font-weight: bold;
+      font-size: 20px;
+    }
+
+    .affiliate-button {
+      background-color: white;
+      color: black;
+      border: none;
+      padding: 5px 35px;
+      font-size: 22px;
+      cursor: pointer;
+      margin-top: 10px;
+      margin-bottom: 20px;
+      border-radius: 5px;
+      border: solid 2px #F58220;
+      transition: 0.3s;
+      font-weight: bold;
+    }
+
+    .affiliate-button:hover {
+      background-color: black;
+      color: white;
+    }
+
+    .popup-overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 999;
+    }
+
+    .popup-content {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      width: 300px;
+      text-align: center;
+      color: black;
+      box-shadow: 0 0 20px rgba(0,0,0,0.3);
+    }
+
+    .popup-content input {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+    }
+
+    .popup-content button {
+      padding: 10px 20px;
+      background-color: white;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .popup-content .close-btn {
+      margin-top: 15px;
+      background-color: #444;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <nav class="navbar">
+      <div class="logo">
+        <img src="Nova logo rio nilo.png" alt="Logo Rio Nilo" style="height:50px;" />
+      </div>
+      <ul>
+        <li><a href="#" class="active">Inicio</a></li>
+        <li class="dropdown">
+          <a href="#">Escolas</a>
+          <ul class="dropdown-menu">
+            <li><a href="escola1.html">Escola Alpha</a></li>
+            <li><a href="#">Escola Beta</a></li>
+            <li><a href="#">Escola Gamma</a></li>
+          </ul>
+        </li>
+        <li><a href="#">Nossos Livros</a></li>
+        <li><a href="#">Cadastrar-se</a></li>
+        <li><a href="#">Fale Conosco</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <section id="buscar-escola">
+    <div class="search-container">
+      <input type="text" placeholder="Buscar..." />
+    </div>
+
+    <div class="product-grid">
+      <div class="product-card">
+        <img src="unesp.png" alt="Produto 2" />
+        <h2>UNESP</h2>
+        <p>Endereço: rua sla sla</p>
+        <p class="price">###############></p>
+        <button class="affiliate-button" data-senha="1234" data-url="loja.html">ENTRAR</button>
+      </div>
+
+      <div class="product-card">
+        <img src="unesp.png" alt="Produto 2" />
+        <h2>UNESP</h2>
+        <p>Endereço: rua sla sla</p>
+        <p class="price">###############></p>
+        <button class="affiliate-button">ENTRAR</button>
+      </div>
+
+      <div class="product-card">
+        <img src="unesp.png" alt="Produto 2" />
+        <h2>sim</h2>
+        <p>Endereço: rua sla sla</p>
+        <p class="price">###############></p>
+        <button class="affiliate-button">ENTRAR</button>
+      </div>
+
+      <div class="product-card">
+        <img src="unesp.png" alt="Produto 2" />
+        <h2>Oi</h2>
+        <p>Endereço: rua sla sla</p>
+        <p class="price">###############></p>
+        <button class="affiliate-button">ENTRAR</button>
+      </div>
+    </div>
+
+    <div id="loginPopup" class="popup-overlay">
+      <div class="popup-content">
+        <h2>Login</h2>
+        <form id="loginForm">
+          <label for="username">Usuário:</label>
+          <input type="text" id="username" name="username" required />
+        
+          <label for="password">Senha:</label>
+          <input type="password" id="password" name="password" required />
+        
+          <p id="error-message" style="color: red; display: none;">Senha incorreta!</p>
+        
+          <button  class="close-btn" type="submit">Entrar</button>
+        </form>
+        <button class="close-btn" onclick="closePopup()">Fechar</button>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    let senhaEsperada = "";
+    let urlDestino = "";
+  
+    // Abre o popup e armazena senha/url corretas
+    document.querySelectorAll(".affiliate-button").forEach((button) => {
+      button.addEventListener("click", function () {
+        senhaEsperada = button.getAttribute("data-senha");
+        urlDestino = button.getAttribute("data-url");
+        document.getElementById("loginPopup").style.display = "flex";
+      });
+    });
+  
+    // Fecha o popup
+    function closePopup() {
+      document.getElementById("loginPopup").style.display = "none";
+      document.getElementById("error-message").style.display = "none";
+      document.getElementById("loginForm").reset();
+    }
+  
+    // Valida a senha no envio do formulário
+    document.getElementById("loginForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+      const password = document.getElementById("password").value;
+      const errorMessage = document.getElementById("error-message");
+  
+      if (password === senhaEsperada) {
+        window.location.href = urlDestino;
+      } else {
+        errorMessage.style.display = "block";
+      }
+    });
+  
+    // Busca nos cards pelo título
+    document.addEventListener("DOMContentLoaded", function () {
+      const searchInput = document.querySelector("#buscar-escola .search-container input[type='text']");
+      const productCards = document.querySelectorAll(".product-card");
+  
+      searchInput.addEventListener("input", function (e) {
+        const searchText = e.target.value.toLowerCase();
+        productCards.forEach((card) => {
+          const title = card.querySelector("h2").textContent.toLowerCase();
+          if (title.includes(searchText)) {
+            card.style.display = "block";
+          } else {
+            card.style.display = "none";
+          }
+        });
+      });
+    });
+  </script>
+  
+</body>
+</html>
+

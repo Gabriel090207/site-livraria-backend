@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Loja de Livros</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="shortcut icon" href="Nova-logo-rio-nilo-_3_.ico" type="image/x-icon">
+  <link rel="stylesheet" href="loja.css">
+</head>
+<body>
+
+  <div class="side-menu" id="side-menu">
+    <div class="side-menu-header">
+      <h2>Menu</h2>
+      <i class="fas fa-times" id="close-menu"></i>
+    </div>
+    <ul>
+      <li><i class="fas fa-home"></i><a href="index.html">Início</a></li>
+      <li><i class="fas fa-phone"></i>Contato</li>
+      <li><i class="fas fa-info-circle"></i>Sobre nós</li>
+    </ul>
+  </div>
+
+<header>
+    <i class="fas fa-bars menu-icon" id="menu-toggle"></i>
+    <div class="logo"> <img src="Nova logo rio nilo.png" alt="Logo Rio Nilo" style="height:50px;"></div>
+    <div class="search-bar">
+      <input type="text" placeholder="Buscar livros...">
+    </div>
+    
+    <div class="header-icons">
+      <i class="fas fa-user" id="userIcon"></i>
+      <div id="profileInfo" class="profile-dropdown">
+        <p><strong>Usuário:</strong> João Silva</p>
+        <p><strong>Escola:</strong> Escola Santos Dumont</p>
+      </div>
+      <div id="cart-container" style="position: relative;">
+        <i class="fas fa-shopping-cart" id="cart-icon" style="cursor: pointer; position: relative;"></i>
+        <span id="cart-badge" style="display:none;">0</span>
+    
+        <div id="cart-dropdown"></div>
+      </div>
+    </div>
+  </header>
+
+<div class="container">
+    <nav class="sidebar">
+      <div class="school-card">
+        <h2>Escola</h2>
+        <img src="unesp.png" alt="Logo da Escola" class="school-logo">
+        <h3 class="school-name">Santos Dumont</h3>
+      </div>
+    
+      <h2>Filtrar</h2>
+    
+      <label for="tipo">Categoria:</label>
+      <select id="tipo" class="filter">
+        <option value="">Todos</option>
+        <option value="aventura">Infantil</option>
+        <option value="terror">Fundamental Anos Iniciais</option>
+        <option value="biografia">Fundamental Anos Finais</option>
+      </select>
+    
+      <label for="tipo">Série:</label>
+      <select id="idade" class="filter">
+        <option value="">Todos</option>
+        <option value="infantil">1 Ano - 5 Anos</option>
+        <option value="juvenil">1º Ano - 4º Ano</option>
+        <option value="adulto">5º Ano - 9º Ano</option>
+      </select>
+    
+    </nav>
+
+    <main class="content">
+
+      <div class="carousel">
+      
+        <img id="carousel-image" src="Imagen (1).png" alt="Banner">
+
+      </div>
+<h2 class="section-title">Livros em Destaque</h2>
+
+    
+      <div class="cards" >
+            
+            <div class="card">
+              <img src="livro1.png" alt="As Aventuras de Mike">
+              <h3>As Aventuras de Mike</h3>
+              <p>Editora Outro Planeta</p>
+              <p class="price">R$ 0,01</p>
+              <button class="add-to-cart">Comprar</button>
+            </div>
+            <div class="card">
+              <img src="livro3.png" alt="Five Nights at Freddy's">
+              <h3>Five Nights at Freddy's</h3>
+              <p>Intrínseca</p>
+              <p class="price">R$ 0,02</p>
+              <button class="add-to-cart">Comprar</button>
+            </div>
+            <div class="card">
+              <img src="livro1.png" alt="As Aventuras de Mike">
+              <h3>As Aventuras de Mike</h3>
+              <p>Editora Outro Planeta</p>
+              <p class="price">R$ 42,27</p>
+              <button class="add-to-cart">Comprar</button><br>
+              
+            </div>
+            <div class="card">
+              <img src="livro2.png" alt="Olhos Prateados">
+              <h3>Olhos Prateados</h3>
+              <p>Intrínseca</p>
+              <p class="price">R$ 47,92</p>
+              <button class="add-to-cart">Comprar</button>
+              
+            </div>
+            <div class="card">
+              <img src="livro1.png" alt="As Aventuras de Mike">
+              <h3>As Aventuras de Mike</h3>
+              <p>Editora Outro Planeta</p>
+              <p class="price">R$ 42,27</p>
+              <button class="add-to-cart">Comprar</button><br>
+              
+            </div>
+            <div class="card">
+              <img src="livro1.png" alt="As Aventuras de Mike">
+              <h3>As Aventuras de Mike</h3>
+              <p>Editora Outro Planeta</p>
+              <p class="price">R$ 42,27</p>
+              <button class="add-to-cart">Comprar</button><br>
+              
+            </div>
+          </div>
+
+        </div>
+
+      <div id="cart-notification" class="cart-notification">
+        Item adicionado ao carrinho!
+    </div>
+
+  <script>
+    // Menu lateral
+    const menuIcon = document.querySelector('.menu-icon');
+    const sideMenu = document.getElementById('side-menu');
+    const closeMenu = document.getElementById('close-menu');
+  
+    menuIcon?.addEventListener('click', () => {
+      sideMenu.classList.add('open');
+    });
+  
+    closeMenu?.addEventListener('click', () => {
+      sideMenu.classList.remove('open');
+    });
+  
+    // Perfil do usuário
+    const userIcon = document.getElementById('userIcon');
+    const profileInfo = document.getElementById('profileInfo');
+  
+    userIcon?.addEventListener('click', () => {
+      profileInfo.style.display = profileInfo.style.display === 'block' ? 'none' : 'block';
+    });
+  
+    // Esconde o dropdown se clicar fora
+    document.addEventListener('click', (e) => {
+      if (!profileInfo.contains(e.target) && !userIcon.contains(e.target)) {
+        profileInfo.style.display = 'none';
+      }
+    });
+
+    // --- NOVA FUNÇÃO: Para atualizar o nome do usuário na interface (ADICIONADA AQUI) ---
+    function atualizarNomeUsuario(nome) {
+        const userParagraph = document.querySelector("#profileInfo p:first-child");
+        if (userParagraph) {
+            userParagraph.innerHTML = `<strong>Usuário:</strong> ${nome}`;
+        }
+    }
+
+    // --- Lógica para carregar o nome do localStorage ao carregar a página (ADICIONADA AQUI) ---
+    document.addEventListener("DOMContentLoaded", function() {
+        const nomePersistido = localStorage.getItem('nomeUsuarioLogado'); // Tenta recuperar o nome
+        if (nomePersistido) {
+            atualizarNomeUsuario(nomePersistido); // Se encontrou, atualiza a interface
+        } else {
+            // Opcional: Se não houver nome no localStorage (ex: primeiro acesso sem login)
+            // Você pode exibir um nome padrão como "Visitante" ou "Convidado".
+            // Se preferir que a pessoa faça login, pode redirecionar para a página de login aqui.
+            // Exemplo: window.location.href = 'escola1.html';
+            atualizarNomeUsuario("Convidado"); // Define um nome padrão
+        }
+    });
+
+  </script>
+  
+  <script>
+    const cartKey = 'meuCarrinho';
+    let cart = JSON.parse(localStorage.getItem(cartKey)) || [];
+
+    function saveCart() {
+        localStorage.setItem(cartKey, JSON.stringify(cart));
+    }
+
+    function updateCartUI() {
+        const badge = document.getElementById('cart-badge');
+        const dropdown = document.getElementById('cart-dropdown');
+
+        if (!badge || !dropdown) return;
+
+        if (cart.length === 0) {
+            badge.style.display = 'none';
+            dropdown.innerHTML = '<p>Carrinho vazio</p>';
+            saveCart();
+            return;
+        }
+
+        badge.style.display = 'inline-block';
+        badge.textContent = cart.length;
+
+        dropdown.innerHTML = ''; // Limpa o conteúdo atual para recriar
+
+        cart.forEach((item, index) => {
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'cart-item';
+
+            itemDiv.innerHTML = `
+                <img src="${item.img}" alt="${item.name}">
+                <div class="info">
+                    <h4>${item.name}</h4>
+                    <p>${item.price}</p>
+                    <button class="remove-btn" data-index="${index}">Remover</button>
+                </div>
+            `;
+            dropdown.appendChild(itemDiv);
+        });
+
+        const finishBtn = document.createElement('button');
+        finishBtn.textContent = 'Finalizar Compra';
+        finishBtn.style.cssText = `
+            width: 100%; padding: 10px; background: #F58220; color: white;
+            border: none; border-radius: 5px; text-transform: uppercase; cursor: pointer; margin-top: 5px; font-weight: 800;
+        `;
+
+        finishBtn.addEventListener('click', () => {
+            window.location.href = 'checkout.html';
+        });
+
+        dropdown.appendChild(finishBtn);
+
+        document.querySelectorAll('.remove-btn').forEach(btn => {
+            btn.addEventListener('click', e => {
+                const idx = e.target.getAttribute('data-index');
+                cart.splice(idx, 1);
+                updateCartUI(); 
+            });
+        });
+
+        saveCart();
+        dropdown.style.display = 'block';
+    }
+
+    document.querySelectorAll('.card .add-to-cart').forEach(button => {
+        button.addEventListener('click', () => {
+            const card = button.closest('.card');
+            const img = card.querySelector('img').src;
+            const name = card.querySelector('h3').textContent;
+            const price = card.querySelector('.price').textContent;
+
+            cart.push({ img, name, price });
+            updateCartUI();
+
+            const cartIcon = document.getElementById('cart-icon');
+            if (cartIcon) {
+                cartIcon.classList.add('cart-icon-animation');
+                setTimeout(() => {
+                    cartIcon.classList.remove('cart-icon-animation');
+                }, 500); 
+            }
+
+            const notification = document.getElementById('cart-notification');
+            if (notification) {
+                notification.classList.add('show'); 
+                setTimeout(() => {
+                    notification.classList.remove('show'); 
+                }, 3000);
+            }
+        });
+    });
+
+    const individualBtn = document.querySelector('.container1 .add-to-cart');
+    if (individualBtn) {
+        individualBtn.addEventListener('click', () => {
+            const name = document.querySelector('.product-details h1').textContent;
+            const img = document.querySelector('.product-image img').src;
+            const price = document.querySelector('.product-details .price').textContent;
+
+            cart.push({ img, name, price });
+            updateCartUI();
+
+            const cartIcon = document.getElementById('cart-icon');
+            if (cartIcon) {
+                cartIcon.classList.add('cart-icon-animation');
+                setTimeout(() => {
+                    cartIcon.classList.remove('cart-icon-animation');
+                }, 500); 
+            }
+
+            const notification = document.getElementById('cart-notification');
+            if (notification) {
+                notification.classList.add('show'); 
+                setTimeout(() => {
+                    notification.classList.remove('show'); 
+                }, 3000); 
+            }
+        });
+    }
+
+    const cartIcon = document.getElementById('cart-icon');
+    const cartDropdown = document.getElementById('cart-dropdown');
+
+    if (cartIcon && cartDropdown) {
+        cartIcon.addEventListener('click', (event) => { 
+            event.stopPropagation(); 
+            if (cartDropdown.style.display === 'block') {
+                cartDropdown.style.display = 'none';
+            } else {
+                updateCartUI(); 
+            }
+        });
+
+        cartDropdown.addEventListener('click', (event) => {
+            event.stopPropagation();
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!cartIcon.contains(e.target) && !cartDropdown.contains(e.target)) {
+                cartDropdown.style.display = 'none';
+            }
+        });
+    }
+
+    updateCartUI();
+</script>
+  
+</body>
+</html>

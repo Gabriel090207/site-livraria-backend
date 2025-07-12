@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Pedidos Finalizados</title>
+  <link rel="stylesheet" href="pedidos.css">
+</head>
+
+<body>
+
+  <h1>Pedidos Finalizados</h1>
+
+  <table id="tabela-pedidos">
+    <thead>
+      <tr>
+        <th>Nome</th>
+        <th>CPF</th>
+        <th>Email</th>
+        <th>Total (R$)</th>
+        <th>Data do Pedido</th>
+        <th>Itens</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- pedidos vão aparecer aqui -->
+    </tbody>
+  </table>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.0/firebase-app.js";
+    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.9.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCyV1vBa2uyeE3VWRpVPR7FvLwWFbURFD8",
+      authDomain: "livraria-rio-nilo.firebaseapp.com",
+      projectId: "livraria-rio-nilo",
+      storageBucket: "livraria-rio-nilo.firebasestorage.app",
+      messagingSenderId: "614338779343",
+      appId: "1:614338779343:web:76ccc0cef5030351783fba",
+      measurementId: "G-QLLYDG2CVC"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    async function carregarPedidos() {
+      const tabela = document.querySelector("#tabela-pedidos tbody");
+      tabela.innerHTML = '<tr><td colspan="6">Carregando...</td></tr>';
+
+      try {
+        const querySnapshot = await getDocs(collection(db, "pedidos"));
+        if (querySnapshot.empty) {
+          tabela.innerHTML = '<tr><td colspan="6">Nenhum pedido encontrado.</td></tr>';
+          return;
+        }
+
+        tabela.innerHTML = '';
+        querySnapshot.forEach(doc => {
+          const pedido = doc.data();
+
+          // formatar itens para string simples
+          const itensStr = pedido.itens.map(i => `${i.name} (R$${i.price})`).join(', ');
+
+          // formatar data do pedido
+          const dataPedido = new Date(pedido.dataPedido).toLocaleString('pt-BR');
+
+          // formatar total com 2 casas decimais
+          const totalFormatado = Number(pedido.total).toFixed(2).replace('.', ',');
+
+          const linha = `
+          <tr>
+            <td>${pedido.nome} ${pedido.sobrenome}</td>
+            <td>${pedido.cpf}</td>
+            <td>${pedido.email}</td>
+            <td>${totalFormatado}</td>
+            <td>${dataPedido}</td>
+            <td>${itensStr}</td>
+          </tr>
+        `;
+          tabela.insertAdjacentHTML('beforeend', linha);
+        });
+      } catch (error) {
+        tabela.innerHTML = `<tr><td colspan="6">Erro ao carregar pedidos: ${error.message}</td></tr>`;
+      }
+    }
+
+    carregarPedidos();
+  </script>
+
+</body>
+
+</html>

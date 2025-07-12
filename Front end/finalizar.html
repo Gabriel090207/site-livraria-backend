@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Livraria Web - Finalizar Pedido</title>
+    <link rel="shortcut icon" href="Nova-logo-rio-nilo-_3_.ico" type="image/x-icon">
+    <link rel="stylesheet" href="finalizar.css">
+    
+</head>
+<body>
+
+    <header>
+        <div> <img class="logo" src="Nova logo rio nilo.png" alt="Livraria e Distribuidora Rio Nilo">
+        </div>
+      </header>
+
+    <div class="main-content">
+        <div class="billing-details">
+            <h2>Detalhes de Cobrança</h2>
+            <form id="billingForm">
+                <div class="form-group">
+                    <label for="email">Endereço de email</label>
+                    <input type="email" id="email" required>
+                </div>
+                <div class="form-group col-2">
+                    <div>
+                        <label for="firstName">Nome</label>
+                        <input type="text" id="firstName" required>
+                    </div>
+                    <div>
+                        <label for="lastName">Sobrenome</label>
+                        <input type="text" id="lastName" required>
+                    </div>
+                </div>
+                <div class="form-group col-2">
+                    <div>
+                        <label for="cpf">CPF</label>
+                        <input type="text" id="cpf" placeholder="000.000.000-00" required>
+                    </div>
+                    <div>
+                        <label for="dob">Data de nascimento</label>
+                        <input type="date" id="dob" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="phone">Celular</label>
+                    <input type="tel" id="phone" placeholder="(XX) XXXXX-XXXX" required>
+                </div>
+                <div class="form-group">
+                    <label for="country">País</label>
+                    <input type="text" id="country" value="Brasil" readonly>
+                </div>
+                <div class="form-group col-2">
+                    <div>
+                        <label for="zipCode">CEP</label>
+                        <input type="text" id="zipCode" placeholder="XXXXX-XXX" required>
+                    </div>
+                    <div>
+                        <label for="address">Endereço</label>
+                        <input type="text" id="address" required>
+                    </div>
+                </div>
+                <div class="form-group col-2">
+                    <div>
+                        <label for="neighborhood">Bairro</label>
+                        <input type="text" id="neighborhood" required>
+                    </div>
+                    <div>
+                        <label for="number">Número</label>
+                        <input type="text" id="number" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="complement">Complemento</label>
+                    <input type="text" id="complement">
+                </div>
+            </form>
+
+            <div class="payment-methods">
+                <h3>Detalhes do Cartão de Crédito</h3>
+                <div id="creditCardDetails" class="payment-details">
+                    <div class="form-group">
+                        <label for="cardNumber">Número do Cartão:</label>
+                        <input type="text" id="cardNumber" placeholder="0000 0000 0000 0000" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="holder">Nome no Cartão:</label>
+                        <input type="text" id="holder" placeholder="Como no cartão" required>
+                    </div>
+                    <div class="form-group col-2">
+                        <div>
+                            <label for="expirationDate">Validade (MM/AAAA):</label>
+                            <input type="text" id="expirationDate" placeholder="MM/AAAA" required>
+                        </div>
+                        <div>
+                            <label for="securityCode">CVV:</label>
+                            <input type="text" id="securityCode" placeholder="XXX" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="installments">Parcelas:</label>
+                        <select id="installments" required>
+                            <option value="1">1x (à vista)</option>
+                            <option value="2">2x</option>
+                            <option value="3">3x</option>
+                            <option value="4">4x</option>
+                            <option value="5">5x</option>
+                            <option value="6">6x</option>
+                            <option value="7">7x</option>
+                            <option value="8">8x</option>
+                            <option value="9">9x</option>
+                            <option value="10">10x</option>
+                            <option value="11">11x</option>
+                            <option value="12">12x</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            </div>
+
+        <div class="order-summary">
+            <h2>Seu Pedido</h2>
+            <div id="checkout-items-summary">
+                </div>
+            <div class="total-amount" id="checkout-total-summary">
+                </div>
+            <button class="final-button" id="finalizeOrderBtn">Finalizar pedido</button>
+            <div id="responseMessage"></div>
+        </div>
+    </div>
+
+    <script>
+        const cartKey = 'meuCarrinho';
+        let cart = JSON.parse(localStorage.getItem(cartKey)) || [];
+        let currentTotal = 0; // Variável para armazenar o total do carrinho
+    
+        // Referências aos elementos do DOM
+        const checkoutItemsSummary = document.getElementById('checkout-items-summary');
+        const checkoutTotalSummary = document.getElementById('checkout-total-summary');
+        const finalizeOrderBtn = document.getElementById('finalizeOrderBtn');
+        const responseMessageDiv = document.getElementById('responseMessage');
+        const installmentsSelect = document.getElementById('installments'); // Nova referência
+    
+        document.addEventListener('DOMContentLoaded', () => {
+            renderCartSummary(); // Renderiza os itens do carrinho no resumo
+            updateInstallmentsOptions(); // Chama a nova função para preencher as parcelas
+            finalizeOrderBtn.addEventListener('click', handleFinalizeOrder);
+        });
+    
+        function renderCartSummary() {
+            checkoutItemsSummary.innerHTML = '';
+            currentTotal = 0;
+    
+            if (cart.length === 0) {
+                checkoutItemsSummary.innerHTML = '<p>Seu carrinho está vazio.</p>';
+                checkoutTotalSummary.textContent = 'Total: R$ 0,00';
+                finalizeOrderBtn.disabled = true;
+                return;
+            }
+    
+            cart.forEach((item, index) => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'order-item';
+    
+                const priceNumber = parseFloat(
+                    item.price.replace('R$', '').replace('.', '').replace(',', '.').trim()
+                );
+                currentTotal += isNaN(priceNumber) ? 0 : priceNumber;
+    
+                itemDiv.innerHTML = `
+                    <img src="${item.img}" alt="${item.name}" />
+                    <div class="order-item-info">
+                        <h3>${item.name}</h3>
+                        <p>${item.price}</p>
+                    </div>
+                    <button class="remove-btn" data-index="${index}">Remover</button>
+                `;
+                checkoutItemsSummary.appendChild(itemDiv);
+            });
+    
+            checkoutTotalSummary.textContent = `Total: R$ ${currentTotal.toFixed(2).replace('.', ',')}`;
+    
+            // Adiciona listeners para os botões de remover no resumo do pedido
+            document.querySelectorAll('.order-item .remove-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const indexToRemove = parseInt(e.target.getAttribute('data-index'));
+                    cart.splice(indexToRemove, 1);
+                    localStorage.setItem(cartKey, JSON.stringify(cart));
+                    renderCartSummary(); // Re-renderiza o resumo após remover
+                    updateInstallmentsOptions(); // Atualiza as opções de parcela após mudança no total
+                });
+            });
+    
+            updateInstallmentsOptions(); // Chama aqui também para garantir que as parcelas sejam atualizadas com o total correto
+        }
+    
+        function updateInstallmentsOptions() {
+            installmentsSelect.innerHTML = ''; // Limpa as opções existentes
+            const maxInstallments = 12; // Número máximo de parcelas que você deseja oferecer
+    
+            for (let i = 1; i <= maxInstallments; i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                if (i === 1) {
+                    option.textContent = `1x (à vista) de R$ ${currentTotal.toFixed(2).replace('.', ',')}`;
+                } else {
+                    const installmentValue = currentTotal / i;
+                    option.textContent = `${i}x de R$ ${installmentValue.toFixed(2).replace('.', ',')}`;
+                }
+                installmentsSelect.appendChild(option);
+            }
+        }
+    
+        async function handleFinalizeOrder(event) {
+            event.preventDefault(); // Impede o envio padrão do formulário
+    
+            responseMessageDiv.style.display = 'none';
+            responseMessageDiv.classList.remove('success', 'error');
+    
+            // Coleta dados de cobrança
+            const billingData = {
+                email: document.getElementById('email').value,
+                firstName: document.getElementById('firstName').value,
+                lastName: document.getElementById('lastName').value,
+                cpf: document.getElementById('cpf').value,
+                dob: document.getElementById('dob').value,
+                phone: document.getElementById('phone').value,
+                country: document.getElementById('country').value,
+                zipCode: document.getElementById('zipCode').value,
+                address: document.getElementById('address').value,
+                neighborhood: document.getElementById('neighborhood').value,
+                number: document.getElementById('number').value,
+                complement: document.getElementById('complement').value
+            };
+    
+            // Validação simples dos campos de cobrança (adicione validações mais robustas se necessário)
+            for (const key in billingData) {
+                if (key !== 'complement' && !billingData[key]) { // Complemento é opcional
+                    responseMessageDiv.classList.add('error');
+                    responseMessageDiv.style.display = 'block';
+                    responseMessageDiv.innerHTML = `Por favor, preencha todos os campos de ${key.replace(/([A-Z])/g, ' $1').toLowerCase()}.`;
+                    return;
+                }
+            }
+             // Validação de CPF (reutilizando sua função)
+             if (!validarCPF(billingData.cpf)) {
+                responseMessageDiv.classList.add('error');
+                responseMessageDiv.style.display = 'block';
+                responseMessageDiv.innerHTML = 'CPF inválido. Por favor, preencha corretamente.';
+                return;
+            }
+    
+            // O método de pagamento agora é fixo para Cartão de Crédito
+            const paymentMethod = 'CreditCard';
+            const endpoint = 'processar-pagamento'; // Endpoint fixo para cartão de crédito
+    
+            const cardNumber = document.getElementById('cardNumber').value.replace(/ /g, "");
+            const holder = document.getElementById('holder').value;
+            const expirationDate = document.getElementById('expirationDate').value;
+            const securityCode = document.getElementById('securityCode').value;
+            const installments = document.getElementById('installments').value;
+    
+            if (!cardNumber || !holder || !expirationDate || !securityCode) {
+                responseMessageDiv.classList.add('error');
+                responseMessageDiv.style.display = 'block';
+                responseMessageDiv.innerHTML = 'Por favor, preencha todos os dados do cartão de crédito.';
+                return;
+            }
+    
+            const paymentDetails = {
+                cardNumber: cardNumber,
+                holder: holder,
+                expirationDate: expirationDate,
+                securityCode: securityCode,
+                installments: parseInt(installments),
+                amount: currentTotal.toFixed(2) // Usa o total do carrinho
+            };
+    
+    
+            try {
+                const fullPayload = {
+                    billingData: billingData, // Dados do cliente
+                    paymentMethod: paymentMethod, // Método escolhido (fixo para CreditCard)
+                    paymentDetails: paymentDetails, // Detalhes específicos do pagamento
+                    cartItems: cart // Itens do carrinho para referência no backend, se precisar
+                };
+    
+                const response = await fetch(`http://127.0.0.1:5000/${endpoint}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(fullPayload)
+                });
+    
+                const result = await response.json(); // Pega a resposta do seu back-end
+    
+                responseMessageDiv.style.display = 'block';
+    
+                if (response.ok) { // Verifica se a requisição HTTP para o backend foi bem-sucedida (status 2xx)
+                    if (result.status === "success") {
+                        responseMessageDiv.classList.add('success');
+                        responseMessageDiv.innerHTML = `Pagamento Processado com Sucesso! ✅<br><br>Detalhes da Cielo:<pre>${JSON.stringify(result.cielo_response, null, 2)}</pre>`;
+                        localStorage.removeItem(cartKey); // Limpa o carrinho após a compra
+                        renderCartSummary(); // Atualiza o resumo e as parcelas
+                    } else {
+                        // Se o back-end retornar "error" mesmo com status 200 (ex: erro Cielo)
+                        responseMessageDiv.classList.add('error');
+                        responseMessageDiv.innerHTML = `Erro no Pagamento: ❌<br><br>Mensagem: ${result.message || 'Erro desconhecido'}<br><br>Detalhes da Cielo:<pre>${JSON.stringify(result.cielo_error, null, 2)}</pre>`;
+                    }
+                } else {
+                    // Se o backend retornar um status de erro HTTP (ex: 400, 500)
+                    responseMessageDiv.classList.add('error');
+                    responseMessageDiv.innerHTML = `Erro na Comunicação com o Back-end: ❌<br><br>Mensagem: ${result.message || 'Erro inesperado'}`;
+                    if (result.cielo_error) {
+                        responseMessageDiv.innerHTML += `<br><br>Detalhes da Cielo:<pre>${JSON.stringify(result.cielo_error, null, 2)}</pre>`;
+                    }
+                }
+    
+            } catch (error) {
+                responseMessageDiv.style.display = 'block';
+                responseMessageDiv.classList.add('error');
+                responseMessageDiv.innerHTML = `Erro de Conexão: ❌<br>Não foi possível conectar ao back-end. Certifique-se de que ele está rodando. Detalhes: ${error.message}`;
+                console.error('Erro ao enviar requisição:', error);
+            }
+        }
+    
+        // Validador de CPF (reutilizado do seu checkout.html)
+        function validarCPF(cpf) {
+            cpf = cpf.replace(/[^\d]+/g, '');
+            if (cpf.length !== 11 || /^(\d)\1+$/.test(cpf)) return false;
+    
+            let soma = 0;
+            for (let i = 0; i < 9; i++) soma += parseInt(cpf.charAt(i)) * (10 - i);
+            let resto = (soma * 10) % 11;
+            if (resto === 10 || resto === 11) resto = 0;
+            if (resto !== parseInt(cpf.charAt(9))) return false;
+    
+            soma = 0;
+            for (let i = 0; i < 10; i++) soma += parseInt(cpf.charAt(i)) * (11 - i);
+            resto = (soma * 10) % 11;
+            if (resto === 10 || resto === 11) resto = 0;
+            if (resto !== parseInt(cpf.charAt(10))) return false;
+    
+            return true;
+        }
+    
+    
+    </script>
+</body>
+</html>

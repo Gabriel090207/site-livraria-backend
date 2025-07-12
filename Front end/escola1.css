@@ -1,0 +1,275 @@
+* {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Open Sans', sans-serif;
+    }
+
+    body {
+      background: #ffffff;
+      color: #000000;
+    }
+    
+    html {
+      scroll-behavior: smooth;
+    }
+    
+    /* barra de cima */
+    .navbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      background: #ffffff;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 1000; /* Garante que fique por cima de outros elementos */
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* sombra opcional para destacar */
+    }
+    
+    
+    .navbar .logo {
+      display: flex;
+      align-items: center;
+      color: black;
+      font-size: 20px;
+      font-weight: 700;
+    }
+    
+    .navbar .logo span {
+      color: #F58220;
+      font-weight: bold;
+    }
+    
+    .navbar>ul {
+      list-style: none;
+      display: flex;
+      gap: 20px;
+    }
+    
+    .navbar ul li {
+      position: relative;
+    }
+    
+    /* menu */
+    .dropdown-menu {
+      display: none;
+      position: absolute;
+      top: 100%;
+      background-color: white;
+      min-width: 160px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+      z-index: 1000;
+    }
+    
+    .dropdown-menu li {
+      display: block;
+    }
+    
+    .dropdown-menu li a {
+      padding: 10px;
+      display: block;
+      color: black;
+      text-decoration: none;
+    }
+    
+    .dropdown:hover .dropdown-menu {
+      display: block;
+    }
+    
+    .dropdown-menu li a:hover {
+      background-color: #f0f0f0;
+      border-radius: 0px;
+    }
+    
+    .navbar ul li a {
+      color: black;
+      font-weight: bold;
+      text-decoration: none;
+      padding: 5px 10px;
+      border-radius: 10px;
+    }
+    
+   
+    .navbar ul li a:hover {
+      background: #F58220;
+      color: #fff;
+      transition: 0.5s;
+    }
+    
+
+    /* NOVO ESTILO - SEÇÃO BUSCAR ESCOLA COM FUNDO */
+    #buscar-escola {
+      background: #ffffff;
+      padding: 20px 60px 40px;
+      text-align: center;
+    }
+
+    /* Barra de pesquisa centralizada */
+    .search-container {
+      margin-top: 100px;
+      display: flex;
+      justify-content: center;
+      margin-bottom: 30px;
+      width: 100%;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .search-container input[type="text"] {
+      width: 100%;
+      padding: 12px 20px;
+      font-size: 18px;
+      border-radius: 13px;
+      background-color: whi;
+      border: 1px solid #F58220;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      transition: box-shadow 0.3s;
+      font-family: 'Open Sans', sans-serif;
+    }
+
+    .search-container input[type="text"]:focus {
+      box-shadow: 0 6px 10px rgba(0,0,0,0.2);
+      outline: none;
+    }
+
+    /* Grid dos cards */
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 70px;
+      margin-top: 0;
+      margin-left: 70px;
+      margin-right: 30px;
+    }
+
+    .product-card {
+      background-color: white;
+      border-radius: 13px;
+      box-shadow: 
+        0 15px 70px rgba(0, 0, 0, 0.25), 
+        0 4px 8px rgba(0, 0, 0, 0.15);
+      overflow: hidden;
+      transition: transform 0.3s, box-shadow 0.3s;
+      cursor: pointer;
+      position: relative;
+      text-align: center;
+      border: solid 1px #F58220;
+    }
+
+    .product-card:hover {
+      transform: scale(1.05);
+      box-shadow: 
+        0 16px 70px rgba(0, 0, 0, 0.35), 
+        0 8px 16px rgba(0, 0, 0, 0.25);
+    }
+
+    .product-card img {
+      width: 90%;
+      height: 300px;
+      object-fit: cover;
+      margin: 10px auto;
+      border-radius: 13px;
+      border: solid 1px #F58220;
+      display: block;
+    }
+
+    .product-card h2 {
+      margin: 10px 0 5px;
+      font-size: 22px;
+      color: black;
+    }
+
+    .product-card p {
+      color: black;
+      font-size: 18px;
+      margin-top: 5px;
+    }
+
+    .product-card .price span {
+      color: black;
+      font-weight: bold;
+      font-size: 20px;
+    }
+
+    .affiliate-button {
+      background-color: #F58220;
+      color: white;
+      border: none;
+      padding: 5px 35px;
+      font-size: 22px;
+      cursor: pointer;
+      margin-top: 10px;
+      margin-bottom: 20px;
+      border-radius: 5px;
+      transition: 0.3s;
+      font-weight: bold;
+    }
+
+    .affiliate-button:hover {
+      background-color: #ffa455;
+      color: white;
+    }
+
+    .popup-overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 999;
+    }
+
+    .popup-content {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      width: 300px;
+      text-align: center;
+      color: black;
+      box-shadow: 0 0 20px rgba(0,0,0,0.3);
+    }
+
+    .popup-content input {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+    }
+
+    .popup-content h2{
+      padding-bottom: 20px;
+    }
+
+    input{
+      border-radius: 15px;
+      text-align: center;
+    } 
+
+    .popup-content button {
+      padding: 10px 20px;
+      background-color: white;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .popup-content .close-btn {
+      margin-top: 15px;
+      background-color: #F58220;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .popup-content .close-btn:hover{
+      transform: scale(1.1);
+      transition: 0.2s;
+    }

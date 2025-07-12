@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Login</title>
+    <link rel="shortcut icon" href="Nova-logo-rio-nilo-_3_.ico" type="image/x-icon">
+    <link rel="stylesheet" href="escola1.css">
+</head>
+
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="logo">
+                <img src="Nova logo rio nilo.png" alt="Logo Rio Nilo" style="height:50px;" />
+            </div>
+            <ul>
+                <li><a href="index.html" class="active">Inicio</a></li>
+                <li><a href="#">Fale Conosco</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section id="buscar-escola">
+        <div class="search-container">
+            <input type="text" placeholder="Buscar..." />
+        </div>
+
+        <div class="product-grid">
+            <div class="product-card">
+                <img src="unesp.png" alt="Produto 2" />
+                <h2>Escola Santos Dumont</h2>
+                <p>Endereço: rua sla sla</p>
+                <p class="price">###############></p>
+                <button class="affiliate-button" data-senha="1234" data-url="loja.html">ENTRAR</button>
+            </div>
+
+            <div class="product-card">
+                <img src="unesp.png" alt="Produto 2" />
+                <h2>Escola Tereza Froiz</h2>
+                <p>Endereço: rua sla sla</p>
+                <p class="price">###############></p>
+                <button class="affiliate-button">ENTRAR</button>
+            </div>
+
+            <div class="product-card">
+                <img src="unesp.png" alt="Produto 2"/>
+                <h2>Escola Mundo Encantado</h2>
+                <p>Endereço: rua sla sla</p>
+                <p class="price">###############></p>
+                <button class="affiliate-button">ENTRAR</button>
+            </div>
+
+            <div class="product-card">
+                <img src="unesp.png" alt="Produto 2"/>
+                <h2>Escola Raio de Sol</h2>
+                <p>Endereço: rua sla sla</p>
+                <p class="price">###############></p>
+                <button class="affiliate-button">ENTRAR</button>
+            </div>
+
+            <div class="product-card">
+                <img src="unesp.png" alt="Produto 2" />
+                <h2>Escola Primeiras Descobertas</h2>
+                <p>Endereço: rua sla sla</p>
+                <p class="price">###############></p>
+                <button class="affiliate-button">ENTRAR</button>
+            </div>
+
+            <div class="product-card">
+                <img src="unesp.png" alt="Produto 2" />
+                <h2>Escola Primeiras Descobertas</h2>
+                <p>Endereço: rua sla sla</p>
+                <p class="price">###############></p>
+                <button class="affiliate-button">ENTRAR</button>
+            </div>
+        </div>
+
+        <div id="loginPopup" class="popup-overlay">
+            <div class="popup-content">
+                <h2>Login</h2>
+                <form id="loginForm">
+                    <label for="username">Nome Completo da Criança</label>
+                    <input type="text" id="nomeCompletoCrianca" name="username" required/> 
+
+                    <label for="password">Senha</label>
+                    <input type="password" id="password" name="password" required/>
+
+                    <p id="error-message" style="color: red; display: none;">Senha incorreta!</p>
+
+                    <button class="close-btn" type="submit">Entrar</button>
+                </form>
+                <button class="close-btn" onclick="closePopup()">Fechar</button>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        let senhaEsperada = "";
+        let urlDestino = "";
+
+        document.querySelectorAll(".affiliate-button").forEach((button) => {
+            button.addEventListener("click", function () {
+                senhaEsperada = button.getAttribute("data-senha");
+                urlDestino = button.getAttribute("data-url");
+                document.getElementById("loginPopup").style.display = "flex";
+            });
+        });
+
+        function closePopup() {
+            document.getElementById("loginPopup").style.display = "none";
+            document.getElementById("error-message").style.display = "none";
+            document.getElementById("loginForm").reset();
+        }
+
+        document.getElementById("loginForm").addEventListener("submit", function (e) {
+            e.preventDefault();
+            // Já está buscando pelo ID correto após a mudança no HTML
+            const nomeCompletoCriancaInput = document.getElementById("nomeCompletoCrianca"); 
+            const passwordInput = document.getElementById("password");
+            const errorMessage = document.getElementById("error-message");
+
+            const nomeCriancaDigitado = nomeCompletoCriancaInput.value;
+            const password = passwordInput.value;
+
+            if (password === senhaEsperada) {
+                localStorage.setItem('nomeUsuarioLogado', nomeCriancaDigitado); // Salva o nome
+                window.location.href = urlDestino; 
+            } else {
+                errorMessage.style.display = "block";
+            }
+        });
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const searchInput = document.querySelector("#buscar-escola .search-container input[type='text']");
+            const productCards = document.querySelectorAll(".product-card");
+
+            searchInput.addEventListener("input", function (e) {
+                const searchText = e.target.value.toLowerCase();
+                productCards.forEach((card) => {
+                    const title = card.querySelector("h2").textContent.toLowerCase();
+                    if (title.includes(searchText)) {
+                        card.style.display = "block";
+                    } else {
+                        card.style.display = "none";
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>

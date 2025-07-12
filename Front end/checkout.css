@@ -1,0 +1,209 @@
+/* Estilos globais */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+  }
+  
+  body {
+    font-family: 'Arial', sans-serif;
+    background-color: #fff;
+    color: #111;
+    padding: 40px 20px;
+    max-width: 800px;
+    margin: auto;
+  }
+  
+  h1 {
+    margin-top: 70px;
+    font-size: 2em;
+    margin-bottom: 10px;
+    border-bottom: 2px solid #111;
+    padding-bottom: 10px;
+    padding-top: 20px;
+  }
+  
+  /* Itens do carrinho */
+  .cart-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 25px;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 15px;
+    gap: 15px; /* Adicionado do estilo inline */
+  }
+  
+  .cart-item img {
+    width: 80px;
+    height: auto;
+    margin-right: 20px;
+    border: 1px solid #ddd;
+  }
+  
+  /* Info do item do carrinho */
+  .cart-item .info {
+    flex: 1; /* Adicionado do estilo inline */
+  }
+  
+  .cart-item .info h3 {
+    font-size: 1.1em;
+    margin: 0 0 5px 0;
+  }
+  
+  .cart-item .info p {
+    margin: 0;
+    font-weight: bold;
+  }
+  
+  /* Botão remover item */
+  .remove-btn {
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    cursor: pointer;
+  }
+  
+  /* Total do checkout */
+  .total {
+    font-weight: bold;
+    font-size: 1.2em;
+    margin-top: 30px;
+    text-align: right;
+    border-top: 2px solid #111;
+    padding-top: 15px;
+  }
+  
+  /* Botões de confirmação */
+  button#confirm-btn {
+    display: block;
+    margin-top: 3px;
+    width: 100%;
+    padding: 12px;
+    background-color: #111;
+    color: white;
+    border: none;
+    font-weight: bold;
+    text-transform: uppercase;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+  
+  button#confirm-btn:hover {
+    background-color: #333;
+  }
+  
+  /* Estilo para o botão de cancelar compra (copiado do inline) */
+  button#confirm-btn1[style*="background-color: red"] {
+    background-color: red;
+    color: white;
+  }
+  
+  button#confirm-btn1 a {
+    text-decoration: none;
+    color: white;
+  }
+  
+  /* Seção de itens do checkout */
+  #checkout-items {
+    background-color: #fff;
+    box-shadow: rgba(0, 0, 0, 0.25) 0px 7px 15px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
+    padding: 25px;
+    border-radius: 10px;
+  }
+
+  .container_label{
+    background-color: #fff;
+    box-shadow: rgba(0, 0, 0, 0.25) 0px 7px 15px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
+    padding: 25px;
+    border-radius: 10px;
+    margin: 20px 0;
+  }
+
+  .container_label label{
+    text-transform: uppercase;
+  }
+
+  /* Cabeçalho */
+  header {
+    background-color: #fff;
+    color: #F58220;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    width: 100%;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    margin-bottom: 50px;
+    border-bottom: 1px solid #F58220;
+    box-shadow: 0px 5px 0px rgba(255, 171, 97, 0.87);
+  }
+
+   /* Logo */
+  .logo {
+    height: 50px;
+  }
+
+  #close-menu {
+    font-size: 20px;
+    cursor: pointer;
+  }
+  
+  .side-menu ul {
+    list-style: none;
+    padding: 0;
+  }
+  
+  .side-menu ul li {
+    margin: 15px 0;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+  }
+  
+  .side-menu ul li a {
+    text-decoration: none;
+    color: inherit;
+  }
+  
+  /* Dropdown de perfil */
+  .profile-dropdown {
+    display: none;
+    position: absolute;
+    background-color: white;
+    color: black;
+    right: 20px;
+    top: 60px;
+    border-radius: 5px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    padding: 10px;
+    z-index: 100;
+  }
+  
+  .profile-dropdown p {
+    margin: 5px 0;
+  }
+  
+  /* Estilos para o campo CPF */
+  label[for="cpf"] {
+    display: block;
+    margin-bottom: 5px;
+  }
+  
+  input#cpf {
+    padding: 8px;
+    width: 200px;
+  }
+  
+  p#cpf-error {
+    color: red;
+    display: none;
+    margin-top: 5px;
+  }

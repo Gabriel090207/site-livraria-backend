@@ -6,6 +6,9 @@ import os
 import datetime
 
 app = Flask(__name__)
+# Habilita CORS para todas as rotas da sua aplicação Flask
+# Esta configuração é mais flexível para testes locais em múltiplos computadores.
+# ATENÇÃO: PARA PRODUÇÃO, RECOMENDA-SE RESTRINGIR AS ORIGENS O MÁXIMO POSSÍVEL.
 CORS(app, resources={r"/*": {"origins": [
     "http://localhost:5500",  # Sua máquina (Live Server)
     "http://127.0.0.1:5500",  # Sua máquina (Live Server)
@@ -14,6 +17,7 @@ CORS(app, resources={r"/*": {"origins": [
     "file://",                # Para arquivos HTML abertos diretamente do disco
     "null"                    # Outra origem para arquivos abertos diretamente do disco (Chrome)
 ]}})
+
 # Suas credenciais e URLs da Cielo, agora carregadas de variáveis de ambiente
 # O segundo argumento de os.getenv() é um valor padrão para uso local,
 # caso as variáveis de ambiente não estejam definidas no seu sistema.
@@ -21,7 +25,7 @@ CORS(app, resources={r"/*": {"origins": [
 MERCHANT_ID = os.getenv("CIELO_MERCHANT_ID", "6542d0f6-f606-440b-a96e-7fd5a4ec8155")
 MERCHANT_KEY = os.getenv("CIELO_MERCHANT_KEY", "VHMAvxtYBypBBeKhEsz28NDH1JF0NshheALbnUch")
 
-# URLs da API Cielo (PARA PRODUÇÃO)
+# URLs da API Cielo (ATENÇÃO: VERIFIQUE SE SÃO DE SANDBOX OU PRODUÇÃO NO RENDER!)
 CIELO_API_URL = os.getenv("CIELO_API_URL", "https://api.cieloecommerce.cielo.com.br/1/sales/")
 CIELO_API_QUERY_URL = os.getenv("CIELO_API_QUERY_URL", "https://apiquery.cieloecommerce.cielo.com.br/1/sales/")
 
@@ -67,8 +71,9 @@ def processar_pagamento():
                     "Complement": billing_data.get('complement'),
                     "ZipCode": billing_data.get('zipCode'),
                     "District": billing_data.get('neighborhood'),
-                    "City": "CIDADE", # Você precisaria obter a cidade e estado via CEP ou outro campo
-                    "State": "XX",    # Você precisaria obter a cidade e estado via CEP ou outro campo
+                    # CORRIGIDO: Preencha com valores reais para testes
+                    "City": billing_data.get('city', 'SAO PAULO'),
+                    "State": billing_data.get('state', 'SP'),
                     "Country": billing_data.get('country', 'BRA')
                 },
                 "DeliveryAddress": { # Pode ser o mesmo do cliente, se não houver um endereço de entrega separado
@@ -77,8 +82,9 @@ def processar_pagamento():
                     "Complement": billing_data.get('complement'),
                     "ZipCode": billing_data.get('zipCode'),
                     "District": billing_data.get('neighborhood'),
-                    "City": "CIDADE",
-                    "State": "XX",
+                    # CORRIGIDO: Preencha com valores reais para testes
+                    "City": billing_data.get('city', 'SAO PAULO'),
+                    "State": billing_data.get('state', 'SP'),
                     "Country": billing_data.get('country', 'BRA')
                 }
             },
@@ -107,7 +113,18 @@ def processar_pagamento():
         print(f"Enviando para Cielo (Cartão): {json.dumps(payment_data, indent=2)}")
 
         response = requests.post(CIELO_API_URL, headers=headers, data=json.dumps(payment_data))
-        response_json = response.json()
+        
+        # --- NOVO BLOCO: Tratamento de erro para resposta não-JSON ---
+        try:
+            response_json = response.json()
+        except json.JSONDecodeError:
+            print(f"Erro: Resposta da Cielo não é JSON válido. Status: {response.status_code}, Conteúdo: {response.text}")
+            return jsonify({
+                "status": "error",
+                "message": f"Erro inesperado da Cielo. Status: {response.status_code}. Conteúdo: {response.text[:200]}...",
+                "cielo_error": {"raw_response": response.text, "status_code": response.status_code}
+            }), 502 # 502 Bad Gateway indica que o servidor recebeu uma resposta inválida de outro servidor
+        # --- FIM DO NOVO BLOCO ---
 
         print(f"Resposta da Cielo (Cartão): {json.dumps(response_json, indent=2)}")
 
@@ -172,7 +189,18 @@ def processar_pix():
         print(f"Enviando para Cielo (Pix): {json.dumps(pix_data, indent=2)}")
 
         response = requests.post(CIELO_API_URL, headers=headers, data=json.dumps(pix_data))
-        response_json = response.json()
+        
+        # --- NOVO BLOCO: Tratamento de erro para resposta não-JSON ---
+        try:
+            response_json = response.json()
+        except json.JSONDecodeError:
+            print(f"Erro: Resposta da Cielo não é JSON válido. Status: {response.status_code}, Conteúdo: {response.text}")
+            return jsonify({
+                "status": "error",
+                "message": f"Erro inesperado da Cielo. Status: {response.status_code}. Conteúdo: {response.text[:200]}...",
+                "cielo_error": {"raw_response": response.text, "status_code": response.status_code}
+            }), 502
+        # --- FIM DO NOVO BLOCO ---
 
         print(f"Resposta da Cielo (Pix): {json.dumps(response_json, indent=2)}")
 
@@ -235,8 +263,9 @@ def processar_boleto():
                     "Complement": billing_data.get('complement'),
                     "ZipCode": billing_data.get('zipCode'),
                     "District": billing_data.get('neighborhood'),
-                    "City": "CIDADE", # Você precisaria obter a cidade e estado via CEP ou outro campo
-                    "State": "XX",    # Você precisaria obter a cidade e estado via CEP ou outro campo
+                    # CORRIGIDO: Preencha com valores reais para testes
+                    "City": billing_data.get('city', 'SAO PAULO'),
+                    "State": billing_data.get('state', 'SP'),
                     "Country": billing_data.get('country', 'BRA')
                 }
             },
@@ -262,7 +291,18 @@ def processar_boleto():
         print(f"Enviando para Cielo (Boleto): {json.dumps(boleto_data, indent=2)}")
 
         response = requests.post(CIELO_API_URL, headers=headers, data=json.dumps(boleto_data))
-        response_json = response.json()
+        
+        # --- NOVO BLOCO: Tratamento de erro para resposta não-JSON ---
+        try:
+            response_json = response.json()
+        except json.JSONDecodeError:
+            print(f"Erro: Resposta da Cielo não é JSON válido. Status: {response.status_code}, Conteúdo: {response.text}")
+            return jsonify({
+                "status": "error",
+                "message": f"Erro inesperado da Cielo. Status: {response.status_code}. Conteúdo: {response.text[:200]}...",
+                "cielo_error": {"raw_response": response.text, "status_code": response.status_code}
+            }), 502
+        # --- FIM DO NOVO BLOCO ---
 
         print(f"Resposta da Cielo (Boleto): {json.dumps(response_json, indent=2)}")
 

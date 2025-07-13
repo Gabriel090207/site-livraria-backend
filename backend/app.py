@@ -6,7 +6,7 @@ import os
 import datetime
 
 app = Flask(__name__)
-CORS(app) # Habilita CORS para todas as rotas da sua aplicação Flask
+CORS(app, resources={r"/*": {"origins": "http://127.0.0.1:5500"}}) # Habilita CORS para todas as rotas da sua aplicação Flask
 
 # Suas credenciais e URLs da Cielo, agora carregadas de variáveis de ambiente
 # O segundo argumento de os.getenv() é um valor padrão para uso local,

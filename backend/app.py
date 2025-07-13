@@ -6,8 +6,14 @@ import os
 import datetime
 
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "http://127.0.0.1:5500"}}) # Habilita CORS para todas as rotas da sua aplicação Flask
-
+CORS(app, resources={r"/*": {"origins": [
+    "http://localhost:5500",  # Sua máquina (Live Server)
+    "http://127.0.0.1:5500",  # Sua máquina (Live Server)
+    "http://localhost:5000",  # Porta padrão do Flask se rodar sem Live Server
+    "http://127.0.0.1:5000",  # Porta padrão do Flask
+    "file://",                # Para arquivos HTML abertos diretamente do disco
+    "null"                    # Outra origem para arquivos abertos diretamente do disco (Chrome)
+]}})
 # Suas credenciais e URLs da Cielo, agora carregadas de variáveis de ambiente
 # O segundo argumento de os.getenv() é um valor padrão para uso local,
 # caso as variáveis de ambiente não estejam definidas no seu sistema.

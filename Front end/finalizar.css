@@ -182,7 +182,7 @@
             min-width: 45%; /* Ajuste para caber melhor */
         }
 
-        .final-button {
+        .finalizar-button {
             width: 100%;
             padding: 15px;
             background-color: #007bff;
@@ -195,8 +195,26 @@
             transition: background-color 0.3s ease;
         }
 
-        .final-button:hover {
+        .finalizar-button:hover {
             background-color: #0056b3;
+        }
+
+        #cancelar_button{
+            background-color: red;
+            color:white;
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1.2em;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background-color 0.3s ease;
+        }
+
+
+        .order-summary a{
+            text-decoration: none; color:white;
         }
 
         #responseMessage {

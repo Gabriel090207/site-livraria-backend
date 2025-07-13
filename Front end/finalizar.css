@@ -14,7 +14,7 @@
             padding: 20px;
             display: flex;
             align-items: center;
-            justify-content: center;
+            justify-content: space-between; /* Mantém 'space-between' */
             position: fixed;
             width: 100%;
             top: 0;
@@ -23,12 +23,36 @@
             margin-bottom: 50px;
             border-bottom: 1px solid #F58220;
             box-shadow: 0px 5px 0px rgba(255, 171, 97, 0.87);
-          }
+        }
         
-           /* Logo */
-          .logo {
+        /* Logo */
+        .logo {
             height: 50px;
-          }
+        }
+        
+        /* Estilo para a área do Checkout e o ícone */
+        .checkout-area {
+            margin-right: 40px;
+            display: flex;
+            align-items: center;
+            font-weight: bold;
+            color: #000;
+            text-transform: uppercase;
+            font-weight: 800;
+            /* Opcional: destaque para a área do checkout */
+            /* background-color: rgba(255, 255, 0, 0.3); */
+            /* padding: 5px 10px; */
+            /* border-radius: 5px; */
+        }
+        
+        .lock-icon {
+            /* Font Awesome cuida do tamanho base, mas pode ajustar com font-size */
+            font-size: 20px; /* Ajusta o tamanho do ícone */
+            margin-right: 5px; /* Espaçamento entre o cadeado e o texto */
+            color: #F58220; /* Garante que o ícone tenha a cor desejada, pode ser diferente do texto */
+        }
+        /* Estilo para a área do Checkout e o ícone */
+     
         /* Layout Principal */
         .main-content {
             display: flex;
@@ -132,7 +156,8 @@
 
         .order-item-info p {
             margin: 0;
-            color: #777;
+            color: #7c7c7c;
+            font-weight: 700;
         }
 
         .remove-btn {

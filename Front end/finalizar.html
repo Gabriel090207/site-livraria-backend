@@ -3,29 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Livraria Web - Finalizar Pedido</title>
+    <title>Checkout</title>
     <link rel="shortcut icon" href="Nova-logo-rio-nilo-_3_.ico" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" href="finalizar.css">
     
 </head>
 <body>
 
     <header>
-        <div> <img class="logo" src="Nova logo rio nilo.png" alt="Livraria e Distribuidora Rio Nilo">
+        <div>
+            <img class="logo" src="Nova logo rio nilo.png" alt="Livraria e Distribuidora Rio Nilo">
         </div>
-      </header>
+        <div class="checkout-area">
+            <i class="fas fa-lock lock-icon"></i>
+            <span>Checkout</span>
+        </div>
+    </header>
 
     <div class="main-content">
         <div class="billing-details">
             <h2>Detalhes de Cobrança</h2>
             <form id="billingForm">
-                <div class="form-group">
+                <div class="form-group col-2">
                     <div>
                         <label for="firstName">Nome</label>
                         <input type="text" id="firstName" required>
                     </div>
                     <div>
                         <label for="lastName">Sobrenome</label>
+                        <input type="text" id="lastName" required>
+                    </div>
+                    <div>
+                        <label for="lastName">Nome Completo da Criança</label>
                         <input type="text" id="lastName" required>
                     </div>
                 </div>

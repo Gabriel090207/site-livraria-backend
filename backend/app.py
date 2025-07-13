@@ -1,51 +1,33 @@
-# NOVO CONTEÚDO PARA backend/app.py (AGORA EM FASTAPI)
-from fastapi import FastAPI, Request, HTTPException, status
-from fastapi.responses import JSONResponse
-from fastapi.middleware.cors import CORSMiddleware
+from flask import Flask, request, jsonify
+from flask_cors import CORS
 import requests
 import json
 import os
 import datetime
 
-# Cria a instância da aplicação FastAPI
-app = FastAPI()
+app = Flask(__name__)
+CORS(app) # Habilita CORS para todas as rotas da sua aplicação Flask
 
-# Configuração do CORS para permitir requisições do seu front-end local
-# Em produção, você DEVE substituir "*" pela URL específica do seu front-end (e.g., "https://seudominio.com")
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"], # Permite todos os métodos (GET, POST, etc.)
-    allow_headers=["*"], # Permite todos os cabeçalhos
-)
-
-# Suas credenciais da Cielo
-# Lidas de variáveis de ambiente do sistema, com fallback para valores padrão para desenvolvimento local.
-MERCHANT_ID = os.environ.get("MERCHANT_ID", "6542d0f6-f606-440b-a96e-7fd5a4ec8155")
-MERCHANT_KEY = os.environ.get("MERCHANT_KEY", "VHMAvxtYBypBBeKhEsz28NDH1JF0NshheALbnUch")
+# Suas credenciais da Cielo (já estão corretas)
+MERCHANT_ID = "6542d0f6-f606-440b-a96e-7fd5a4ec8155"
+MERCHANT_KEY = "VHMAvxtYBypBBeKhEsz28NDH1JF0NshheALbnUch"
 
 # URLs da API Cielo (PARA PRODUÇÃO)
 CIELO_API_URL = "https://api.cieloecommerce.cielo.com.br/1/sales/"
 CIELO_API_QUERY_URL = "https://apiquery.cieloecommerce.cielo.com.br/1/sales/"
 
-@app.get("/")
-async def home():
-    """Rota de teste para verificar se o backend está ativo."""
-    return {"message": "Backend Cielo com FastAPI funcionando! Acesse /processar-pagamento, /processar-pix ou /processar-boleto."}
+@app.route('/')
+def home():
+    return "Backend Cielo funcionando! Acesse /processar-pagamento, /processar-pix ou /processar-boleto."
 
 # --- ROTA PARA CARTÃO DE CRÉDITO ---
-@app.post("/processar-pagamento")
-async def processar_pagamento(request: Request):
-    """
-    Processa um pagamento com Cartão de Crédito via API Cielo.
-    Recebe dados de cobrança e detalhes do cartão do front-end.
-    """
+@app.route('/processar-pagamento', methods=['POST'])
+def processar_pagamento():
     try:
-        data = await request.json() # Usa await para ler o corpo JSON de uma requisição assíncrona
+        data = request.get_json()
 
         if not data or 'paymentDetails' not in data or 'billingData' not in data:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail={"error": "Dados inválidos ou incompletos"})
+            return jsonify({"error": "Dados inválidos ou incompletos"}), 400
 
         payment_details = data['paymentDetails']
         billing_data = data['billingData']
@@ -54,12 +36,13 @@ async def processar_pagamento(request: Request):
         if 'cardNumber' not in payment_details or 'holder' not in payment_details or \
            'expirationDate' not in payment_details or 'securityCode' not in payment_details or \
            'amount' not in payment_details:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail={"error": "Dados de pagamento do cartão incompletos"})
+            return jsonify({"error": "Dados de pagamento do cartão incompletos"}), 400
 
         card_number = payment_details['cardNumber'].replace(" ", "").replace("-", "")
         amount_in_cents = int(float(payment_details['amount']) * 100)
-        installments = payment_details.get('installments', 1)
+        installments = payment_details.get('installments', 1) # Pega do front-end, padrão 1
 
+        # MerchantOrderId deve ser único para cada transação. Geraremos um dinamicamente.
         merchant_order_id = f"LV_{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}_{os.urandom(4).hex()}"
 
         payment_data = {
@@ -75,18 +58,18 @@ async def processar_pagamento(request: Request):
                     "Complement": billing_data.get('complement'),
                     "ZipCode": billing_data.get('zipCode'),
                     "District": billing_data.get('neighborhood'),
-                    "City": "BRODOWSKI", # TODO: Obter a cidade via API de CEP ou de um campo no front-end
-                    "State": "SP",    # TODO: Obter o estado via API de CEP ou de um campo no front-end
+                    "City": "CIDADE", # Você precisaria obter a cidade e estado via CEP ou outro campo
+                    "State": "XX",    # Você precisaria obter a cidade e estado via CEP ou outro campo
                     "Country": billing_data.get('country', 'BRA')
                 },
-                "DeliveryAddress": {
+                "DeliveryAddress": { # Pode ser o mesmo do cliente, se não houver um endereço de entrega separado
                     "Street": billing_data.get('address'),
                     "Number": billing_data.get('number'),
                     "Complement": billing_data.get('complement'),
                     "ZipCode": billing_data.get('zipCode'),
                     "District": billing_data.get('neighborhood'),
-                    "City": "BRODOWSKI",
-                    "State": "SP",
+                    "City": "CIDADE",
+                    "State": "XX",
                     "Country": billing_data.get('country', 'BRA')
                 }
             },
@@ -99,9 +82,9 @@ async def processar_pagamento(request: Request):
                 "CreditCard": {
                     "CardNumber": card_number,
                     "Holder": payment_details['holder'],
-                    "ExpirationDate": payment_details['expirationDate'],
+                    "ExpirationDate": payment_details['expirationDate'], # MM/AAAA
                     "SecurityCode": payment_details['securityCode'],
-                    "Brand": "Visa" # Cielo pode auto-detectar, mas é bom enviar
+                    "Brand": "Visa" # A Cielo pode auto-detectar, mas é bom enviar. Em produção, você pode usar a detecção de bin.
                 }
             }
         }
@@ -114,55 +97,46 @@ async def processar_pagamento(request: Request):
 
         print(f"Enviando para Cielo (Cartão): {json.dumps(payment_data, indent=2)}")
 
-        # requests é síncrono, mas FastAPI o executa em um threadpool para não bloquear
         response = requests.post(CIELO_API_URL, headers=headers, data=json.dumps(payment_data))
         response_json = response.json()
 
         print(f"Resposta da Cielo (Cartão): {json.dumps(response_json, indent=2)}")
 
         # A Cielo retorna 201 Created para sucesso de autorização
-        if response.status_code == status.HTTP_201_CREATED and response_json.get('Payment', {}).get('Status') == 2: # Status 2 = Autorizado
-            return JSONResponse(status_code=status.HTTP_200_OK, content={
+        if response.status_code == 201 and response_json.get('Payment', {}).get('Status') == 2: # Status 2 = Autorizado
+            return jsonify({
                 "status": "success",
                 "message": "Pagamento com cartão processado com sucesso!",
                 "cielo_response": response_json
-            })
+            }), 200
         else:
-            # Captura a mensagem de retorno da Cielo para exibir no front-end
-            return_message = response_json.get('Payment', {}).get('ReturnMessage', 'Erro ao processar pagamento com cartão na Cielo')
-            return_code = response_json.get('Payment', {}).get('ReturnCode', 'N/A')
-            
-            raise HTTPException(status_code=response.status_code, detail={
+            return jsonify({
                 "status": "error",
-                "message": f"Erro Cielo ({return_code}): {return_message}",
+                "message": response_json.get('Payment', {}).get('ReturnMessage', 'Erro ao processar pagamento com cartão na Cielo'),
                 "cielo_error": response_json
-            })
+            }), response.status_code
 
-    except HTTPException as e:
-        raise e # Re-lança HTTPException para o FastAPI lidar
     except Exception as e:
         print(f"Erro inesperado no cartão: {e}")
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail={"status": "error", "message": str(e)})
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 
 # --- ROTA PARA PIX ---
-@app.post("/processar-pix")
-async def processar_pix(request: Request):
-    """
-    Processa um pagamento Pix via API Cielo, gerando um QR Code.
-    """
+@app.route('/processar-pix', methods=['POST'])
+def processar_pix():
     try:
-        data = await request.json()
+        data = request.get_json()
 
         if not data or 'paymentDetails' not in data or 'billingData' not in data:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail={"error": "Dados inválidos ou incompletos"})
+            return jsonify({"error": "Dados inválidos ou incompletos"}), 400
 
-        payment_details = data['paymentDetails']
+        payment_details = data['paymentDetails'] # Contém amount, customer
         billing_data = data['billingData']
 
         amount_in_cents = int(float(payment_details['amount']) * 100)
         merchant_order_id = f"LV_PIX_{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}_{os.urandom(4).hex()}"
 
+        # Construa o payload para o Pix (Cielo espera um formato específico)
         pix_data = {
             "MerchantOrderId": merchant_order_id,
             "Customer": {
@@ -193,56 +167,52 @@ async def processar_pix(request: Request):
 
         print(f"Resposta da Cielo (Pix): {json.dumps(response_json, indent=2)}")
 
-        if response.status_code == status.HTTP_201_CREATED:
+        if response.status_code == 201: # 201 Created é o esperado para sucesso na criação do Pix
+            # Verifique se a string do QR Code está presente
             qr_code_string = response_json.get('Payment', {}).get('QrCodeString')
             if qr_code_string:
-                return JSONResponse(status_code=status.HTTP_200_OK, content={
+                return jsonify({
                     "status": "success",
                     "message": "QR Code Pix gerado com sucesso!",
                     "cielo_response": response_json
-                })
+                }), 200
             else:
-                raise HTTPException(status_code=response.status_code, detail={
+                return jsonify({
                     "status": "error",
                     "message": "Erro ao gerar QR Code Pix: QR Code não encontrado na resposta.",
                     "cielo_error": response_json
-                })
+                }), response.status_code
         else:
-            return_message = response_json.get('Payment', {}).get('ReturnMessage', 'Erro ao processar Pix na Cielo')
-            return_code = response_json.get('Payment', {}).get('ReturnCode', 'N/A')
-            raise HTTPException(status_code=response.status_code, detail={
+            return jsonify({
                 "status": "error",
-                "message": f"Erro Cielo ({return_code}): {return_message}",
+                "message": response_json.get('Payment', {}).get('ReturnMessage', 'Erro ao processar Pix na Cielo'),
                 "cielo_error": response_json
-            })
+            }), response.status_code
 
-    except HTTPException as e:
-        raise e
     except Exception as e:
         print(f"Erro inesperado no Pix: {e}")
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail={"status": "error", "message": str(e)})
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 
 # --- ROTA PARA BOLETO ---
-@app.post("/processar-boleto")
-async def processar_boleto(request: Request):
-    """
-    Processa um pagamento via Boleto Bancário, gerando a URL do boleto.
-    """
+@app.route('/processar-boleto', methods=['POST'])
+def processar_boleto():
     try:
-        data = await request.json()
+        data = request.get_json()
 
         if not data or 'paymentDetails' not in data or 'billingData' not in data:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail={"error": "Dados inválidos ou incompletos"})
+            return jsonify({"error": "Dados inválidos ou incompletos"}), 400
 
-        payment_details = data['paymentDetails']
+        payment_details = data['paymentDetails'] # Contém amount, customer, address
         billing_data = data['billingData']
 
         amount_in_cents = int(float(payment_details['amount']) * 100)
         merchant_order_id = f"LV_BOLETO_{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}_{os.urandom(4).hex()}"
 
+        # Data de vencimento do boleto (ex: 5 dias a partir de hoje)
         due_date = (datetime.date.today() + datetime.timedelta(days=5)).strftime('%Y-%m-%d')
 
+        # Construa o payload para o Boleto (Cielo espera um formato específico)
         boleto_data = {
             "MerchantOrderId": merchant_order_id,
             "Customer": {
@@ -250,14 +220,14 @@ async def processar_boleto(request: Request):
                 "Identity": billing_data.get('cpf'),
                 "IdentityType": "CPF",
                 "Email": billing_data.get('email'),
-                "Address": {
+                "Address": { # Endereço do cliente para o boleto
                     "Street": billing_data.get('address'),
                     "Number": billing_data.get('number'),
                     "Complement": billing_data.get('complement'),
                     "ZipCode": billing_data.get('zipCode'),
                     "District": billing_data.get('neighborhood'),
-                    "City": "BRODOWSKI", # TODO: Obter a cidade via API de CEP ou de um campo no front-end
-                    "State": "SP",    # TODO: Obter o estado via API de CEP ou de um campo no front-end
+                    "City": "CIDADE", # Você precisaria obter a cidade e estado via CEP ou outro campo
+                    "State": "XX",    # Você precisaria obter a cidade e estado via CEP ou outro campo
                     "Country": billing_data.get('country', 'BRA')
                 }
             },
@@ -265,8 +235,8 @@ async def processar_boleto(request: Request):
                 "Type": "Boleto",
                 "Amount": amount_in_cents,
                 "BoletoNumber": f"000000{os.urandom(3).hex()}", # Gerar um número de boleto interno
-                "BarCodeNumber": "", # Cielo preenche
-                "DigitableLine": "", # Cielo preenche
+                "BarCodeNumber": "", # A Cielo preenche
+                "DigitableLine": "", # A Cielo preenche
                 "Demonstrative": "Pagamento referente à compra na Livraria Web",
                 "Instructions": "Não receber após o vencimento",
                 "Provider": "Bradesco", # Exemplo: Cielo aceita vários bancos, verifique a docs
@@ -287,34 +257,31 @@ async def processar_boleto(request: Request):
 
         print(f"Resposta da Cielo (Boleto): {json.dumps(response_json, indent=2)}")
 
-        if response.status_code == status.HTTP_201_CREATED:
+        if response.status_code == 201: # 201 Created é o esperado para sucesso na criação do Boleto
+            # Verifique se a URL do boleto está presente
             boleto_url = response_json.get('Payment', {}).get('Url')
             if boleto_url:
-                return JSONResponse(status_code=status.HTTP_200_OK, content={
+                return jsonify({
                     "status": "success",
                     "message": "Boleto gerado com sucesso!",
                     "cielo_response": response_json
-                })
+                }), 200
             else:
-                raise HTTPException(status_code=response.status_code, detail={
+                return jsonify({
                     "status": "error",
                     "message": "Erro ao gerar Boleto: URL do boleto não encontrada na resposta.",
                     "cielo_error": response_json
-                })
+                }), response.status_code
         else:
-            return_message = response_json.get('Payment', {}).get('ReturnMessage', 'Erro ao processar Boleto na Cielo')
-            return_code = response_json.get('Payment', {}).get('ReturnCode', 'N/A')
-            raise HTTPException(status_code=response.status_code, detail={
+            return jsonify({
                 "status": "error",
-                "message": f"Erro Cielo ({return_code}): {return_message}",
+                "message": response_json.get('Payment', {}).get('ReturnMessage', 'Erro ao processar Boleto na Cielo'),
                 "cielo_error": response_json
-            })
+            }), response.status_code
 
-    except HTTPException as e:
-        raise e
     except Exception as e:
         print(f"Erro inesperado no Boleto: {e}")
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail={"status": "error", "message": str(e)})
+        return jsonify({"status": "error", "message": str(e)}), 500
 
-# O if __name__ == '__main__': app.run(debug=True, port=5000) não é usado com Uvicorn/FastAPI
-# O Uvicorn é iniciado via linha de comando (ou Procfile)
+if __name__ == '__main__':
+    app.run(debug=True, port=5000)

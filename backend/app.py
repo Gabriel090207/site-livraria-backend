@@ -8,13 +8,16 @@ import datetime
 app = Flask(__name__)
 CORS(app) # Habilita CORS para todas as rotas da sua aplicação Flask
 
-# Suas credenciais da Cielo (já estão corretas)
-MERCHANT_ID = "6542d0f6-f606-440b-a96e-7fd5a4ec8155"
-MERCHANT_KEY = "VHMAvxtYBypBBeKhEsz28NDH1JF0NshheALbnUch"
+# Suas credenciais e URLs da Cielo, agora carregadas de variáveis de ambiente
+# O segundo argumento de os.getenv() é um valor padrão para uso local,
+# caso as variáveis de ambiente não estejam definidas no seu sistema.
+# No Render, você definirá essas variáveis na interface.
+MERCHANT_ID = os.getenv("CIELO_MERCHANT_ID", "6542d0f6-f606-440b-a96e-7fd5a4ec8155")
+MERCHANT_KEY = os.getenv("CIELO_MERCHANT_KEY", "VHMAvxtYBypBBeKhEsz28NDH1JF0NshheALbnUch")
 
 # URLs da API Cielo (PARA PRODUÇÃO)
-CIELO_API_URL = "https://api.cieloecommerce.cielo.com.br/1/sales/"
-CIELO_API_QUERY_URL = "https://apiquery.cieloecommerce.cielo.com.br/1/sales/"
+CIELO_API_URL = os.getenv("CIELO_API_URL", "https://api.cieloecommerce.cielo.com.br/1/sales/")
+CIELO_API_QUERY_URL = os.getenv("CIELO_API_QUERY_URL", "https://apiquery.cieloecommerce.cielo.com.br/1/sales/")
 
 @app.route('/')
 def home():
@@ -284,4 +287,8 @@ def processar_boleto():
         return jsonify({"status": "error", "message": str(e)}), 500
 
 if __name__ == '__main__':
+    # No ambiente local de desenvolvimento, este trecho é executado
+    # Para carregar variáveis de ambiente localmente, você pode usar a biblioteca `python-dotenv`.
+    # Adicione `from dotenv import load_dotenv` no topo e `load_dotenv()` antes de app.run()
+    # (Lembre-se de adicionar 'python-dotenv' ao requirements.txt e '.env' ao .gitignore)
     app.run(debug=True, port=5000)

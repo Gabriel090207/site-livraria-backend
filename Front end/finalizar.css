@@ -136,13 +136,19 @@
         }
 
         .remove-btn {
-            background-color: #e74c3c;
+            background-color: #ff0000;
             color: white;
             border: none;
             padding: 5px 10px;
             border-radius: 4px;
             cursor: pointer;
-            font-size: 0.8em;
+            font-size: 0.97em;
+            font-weight: 700;
+            transition: background-color 0.3s ease;
+        }
+
+        .remove-btn:hover{
+            background-color: #a50000;
         }
 
         .total-amount {
@@ -200,7 +206,7 @@
         }
 
         #cancelar_button{
-            background-color: red;
+            background-color: #ff0000;
             color:white;
             width: 100%;
             padding: 15px;
@@ -212,9 +218,14 @@
             transition: background-color 0.3s ease;
         }
 
+        #cancelar_button:hover {
+            background-color: #a50000;
+        }
+
 
         .order-summary a{
-            text-decoration: none; color:white;
+            text-decoration: none;
+            color:white;
         }
 
         #responseMessage {

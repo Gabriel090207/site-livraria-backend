@@ -4,6 +4,7 @@ import requests
 import json
 import os
 import datetime
+import traceback # Importado para depuração de erros
 
 app = Flask(__name__)
 # Habilita CORS para todas as rotas da sua aplicação Flask
@@ -39,7 +40,12 @@ def processar_pagamento():
     try:
         data = request.get_json()
 
-        if not data or 'paymentDetails' not in data or 'billingData' not in data:
+        # Verifica se 'data' é None ou não é um dicionário
+        if not isinstance(data, dict) or not data:
+            print(f"Erro: Payload JSON recebido não é um dicionário ou está vazio. Tipo: {type(data)}")
+            return jsonify({"error": "Dados inválidos ou incompletos. Esperado um objeto JSON."}), 400
+
+        if 'paymentDetails' not in data or 'billingData' not in data:
             return jsonify({"error": "Dados inválidos ou incompletos"}), 400
 
         payment_details = data['paymentDetails']
@@ -71,9 +77,9 @@ def processar_pagamento():
                     "Complement": billing_data.get('complement'),
                     "ZipCode": billing_data.get('zipCode'),
                     "District": billing_data.get('neighborhood'),
-                    # CORRIGIDO: Preencha com valores reais para testes
-                    "City": billing_data.get('city', 'SAO PAULO'),
-                    "State": billing_data.get('state', 'SP'),
+                    # IMPORTANTE: Garanta que 'city' e 'state' venham do frontend ou use padrões robustos.
+                    "City": billing_data.get('city', 'SAO PAULO'), # Sugestão: adicione 'city' ao billingData do frontend
+                    "State": billing_data.get('state', 'SP'),     # Sugestão: adicione 'state' ao billingData do frontend
                     "Country": billing_data.get('country', 'BRA')
                 },
                 "DeliveryAddress": { # Pode ser o mesmo do cliente, se não houver um endereço de entrega separado
@@ -82,7 +88,7 @@ def processar_pagamento():
                     "Complement": billing_data.get('complement'),
                     "ZipCode": billing_data.get('zipCode'),
                     "District": billing_data.get('neighborhood'),
-                    # CORRIGIDO: Preencha com valores reais para testes
+                    # CORRIGIDO: Preencha com valores reais para testes.
                     "City": billing_data.get('city', 'SAO PAULO'),
                     "State": billing_data.get('state', 'SP'),
                     "Country": billing_data.get('country', 'BRA')
@@ -97,7 +103,10 @@ def processar_pagamento():
                 "CreditCard": {
                     "CardNumber": card_number,
                     "Holder": payment_details['holder'],
-                    "ExpirationDate": payment_details['expirationDate'], # MM/AAAA
+                    # A data de validade deve ser MM/AAAA (do frontend)
+                    # Cielo espera MMYYYY ou MM/YY ou MM/YYYY.
+                    # Mantenha o formato que vem do frontend, se o erro persistir, ajuste no frontend para MMAAAA.
+                    "ExpirationDate": payment_details['expirationDate'],
                     "SecurityCode": payment_details['securityCode'],
                     "Brand": "Visa" # A Cielo pode auto-detectar, mas é bom enviar. Em produção, você pode usar a detecção de bin.
                 }
@@ -114,7 +123,7 @@ def processar_pagamento():
 
         response = requests.post(CIELO_API_URL, headers=headers, data=json.dumps(payment_data))
         
-        # --- NOVO BLOCO: Tratamento de erro para resposta não-JSON ---
+        # --- Tratamento de erro para resposta não-JSON ---
         try:
             response_json = response.json()
         except json.JSONDecodeError:
@@ -124,18 +133,31 @@ def processar_pagamento():
                 "message": f"Erro inesperado da Cielo. Status: {response.status_code}. Conteúdo: {response.text[:200]}...",
                 "cielo_error": {"raw_response": response.text, "status_code": response.status_code}
             }), 502 # 502 Bad Gateway indica que o servidor recebeu uma resposta inválida de outro servidor
-        # --- FIM DO NOVO BLOCO ---
+        # --- FIM DO BLOCO DE TRATAMENTO DE JSON ---
 
         print(f"Resposta da Cielo (Cartão): {json.dumps(response_json, indent=2)}")
 
-        # A Cielo retorna 201 Created para sucesso de autorização
-        if response.status_code == 201 and response_json.get('Payment', {}).get('Status') == 2: # Status 2 = Autorizado
+        # --- MODIFICAÇÃO PRINCIPAL: Trata respostas de erro da Cielo que são LISTAS ---
+        if isinstance(response_json, list) and response_json: # Se a resposta é uma lista e não está vazia
+            first_error = response_json[0]
+            error_message = first_error.get('Message', 'Erro desconhecido na lista de erros da Cielo')
+            error_code = first_error.get('Code', 'N/A')
+            return jsonify({
+                "status": "error",
+                "message": f"Erro da Cielo: {error_message} (Código: {error_code})",
+                "cielo_error": response_json
+            }), response.status_code # Usamos o status code original da resposta da Cielo
+
+        # Continua com a lógica normal para respostas que são dicionários
+        # A Cielo retorna 201 Created para sucesso de autorização, e Status 2 para Autorizado
+        if response.status_code == 201 and response_json.get('Payment', {}).get('Status') == 2:
             return jsonify({
                 "status": "success",
                 "message": "Pagamento com cartão processado com sucesso!",
                 "cielo_response": response_json
             }), 200
         else:
+            # Caso a resposta seja um dicionário mas contenha um erro ou status diferente
             return jsonify({
                 "status": "error",
                 "message": response_json.get('Payment', {}).get('ReturnMessage', 'Erro ao processar pagamento com cartão na Cielo'),
@@ -143,8 +165,138 @@ def processar_pagamento():
             }), response.status_code
 
     except Exception as e:
-        print(f"Erro inesperado no cartão: {e}")
-        return jsonify({"status": "error", "message": str(e)}), 500
+        # Captura qualquer outra exceção e imprime o traceback completo
+        print(f"Erro INESPERADO na rota do CARTÃO: {type(e).__name__}: {e}")
+        print("Detalhes completos do traceback:")
+        traceback.print_exc() # Imprime a pilha de chamadas completa no log
+        return jsonify({"status": "error", "message": f"Erro interno no backend. Detalhes: {str(e)}", "exception_type": type(e).__name__}), 500
+
+
+# --- ROTA PARA CARTÃO DE DÉBITO ---
+@app.route('/processar-debito', methods=['POST'])
+def processar_debito():
+    try:
+        data = request.get_json()
+
+        if not isinstance(data, dict) or not data:
+            print(f"Erro: Payload JSON recebido não é um dicionário ou está vazio. Tipo: {type(data)}")
+            return jsonify({"error": "Dados inválidos ou incompletos. Esperado um objeto JSON."}), 400
+
+        if 'paymentDetails' not in data or 'billingData' not in data:
+            return jsonify({"error": "Dados inválidos ou incompletos"}), 400
+
+        payment_details = data['paymentDetails']
+        billing_data = data['billingData']
+
+        # Validação básica dos campos de pagamento de débito
+        if 'cardNumber' not in payment_details or 'holder' not in payment_details or \
+           'expirationDate' not in payment_details or 'securityCode' not in payment_details or \
+           'amount' not in payment_details:
+            return jsonify({"error": "Dados de pagamento do cartão de débito incompletos"}), 400
+
+        card_number = payment_details['cardNumber'].replace(" ", "").replace("-", "")
+        amount_in_cents = int(float(payment_details['amount']) * 100)
+
+        merchant_order_id = f"LV_DEBITO_{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}_{os.urandom(4).hex()}"
+
+        debit_data = {
+            "MerchantOrderId": merchant_order_id,
+            "Customer": {
+                "Name": f"{billing_data.get('firstName')} {billing_data.get('lastName')}",
+                "Identity": billing_data.get('cpf'),
+                "IdentityType": "CPF",
+                "Email": billing_data.get('email'),
+                "Address": {
+                    "Street": billing_data.get('address'),
+                    "Number": billing_data.get('number'),
+                    "Complement": billing_data.get('complement'),
+                    "ZipCode": billing_data.get('zipCode'),
+                    "District": billing_data.get('neighborhood'),
+                    "City": billing_data.get('city', 'SAO PAULO'),
+                    "State": billing_data.get('state', 'SP'),
+                    "Country": billing_data.get('country', 'BRA')
+                },
+                "DeliveryAddress": {
+                    "Street": billing_data.get('address'),
+                    "Number": billing_data.get('number'),
+                    "Complement": billing_data.get('complement'),
+                    "ZipCode": billing_data.get('zipCode'),
+                    "District": billing_data.get('neighborhood'),
+                    "City": billing_data.get('city', 'SAO PAULO'),
+                    "State": billing_data.get('state', 'SP'),
+                    "Country": billing_data.get('country', 'BRA')
+                }
+            },
+            "Payment": {
+                "Type": "DebitCard", # Tipo de pagamento para Cartão de Débito
+                "Amount": amount_in_cents,
+                "Authenticate": True, # Débito geralmente exige autenticação 3DS
+                # ATENÇÃO: Esta ReturnUrl é para o frontend local.
+                # Em produção, deve ser a URL do seu frontend em produção (ex: https://sua-loja.com/finalizar.html)
+                "ReturnUrl": "http://localhost:5500/Front%20end/finalizar.html", 
+                "SoftDescriptor": "LIVRARIAWEB",
+                "DebitCard": {
+                    "CardNumber": card_number,
+                    "Holder": payment_details['holder'],
+                    "ExpirationDate": payment_details['expirationDate'], # MM/AAAA ou MMAAAA (conforme frontend)
+                    "SecurityCode": payment_details['securityCode'],
+                    "Brand": "Visa" # Ou a bandeira correta
+                }
+            }
+        }
+
+        headers = {
+            "Content-Type": "application/json",
+            "MerchantId": MERCHANT_ID,
+            "MerchantKey": MERCHANT_KEY
+        }
+
+        print(f"Enviando para Cielo (Débito): {json.dumps(debit_data, indent=2)}")
+
+        response = requests.post(CIELO_API_URL, headers=headers, data=json.dumps(debit_data))
+        
+        try:
+            response_json = response.json()
+        except json.JSONDecodeError:
+            print(f"Erro: Resposta da Cielo (Débito) não é JSON válido. Status: {response.status_code}, Conteúdo: {response.text}")
+            return jsonify({
+                "status": "error",
+                "message": f"Erro inesperado da Cielo. Status: {response.status_code}. Conteúdo: {response.text[:200]}...",
+                "cielo_error": {"raw_response": response.text, "status_code": response.status_code}
+            }), 502
+
+        print(f"Resposta da Cielo (Débito): {json.dumps(response_json, indent=2)}")
+
+        # A Cielo retorna 201 Created para sucesso de criação da transação de débito
+        if response.status_code == 201 and response_json.get('Payment', {}).get('AuthenticationUrl'):
+            # Se a URL de autenticação 3DS foi retornada, redirecionar o cliente para lá
+            return jsonify({
+                "status": "success",
+                "message": "Redirecionando para autenticação 3D Secure...",
+                "cielo_response": response_json,
+                "redirect_url": response_json['Payment']['AuthenticationUrl'] # O frontend usará esta URL
+            }), 200
+        elif isinstance(response_json, list) and response_json: # Trata erros que vêm como lista
+            first_error = response_json[0]
+            error_message = first_error.get('Message', 'Erro desconhecido na lista de erros da Cielo (Débito)')
+            error_code = first_error.get('Code', 'N/A')
+            return jsonify({
+                "status": "error",
+                "message": f"Erro da Cielo (Débito): {error_message} (Código: {error_code})",
+                "cielo_error": response_json
+            }), response.status_code
+        else:
+            return jsonify({
+                "status": "error",
+                "message": response_json.get('Payment', {}).get('ReturnMessage', 'Erro ao processar débito na Cielo'),
+                "cielo_error": response_json
+            }), response.status_code
+
+    except Exception as e:
+        print(f"Erro INESPERADO na rota do DÉBITO: {type(e).__name__}: {e}")
+        print("Detalhes completos do traceback:")
+        traceback.print_exc()
+        return jsonify({"status": "error", "message": f"Erro interno no backend. Detalhes: {str(e)}", "exception_type": type(e).__name__}), 500
 
 
 # --- ROTA PARA PIX ---
@@ -152,6 +304,10 @@ def processar_pagamento():
 def processar_pix():
     try:
         data = request.get_json()
+        
+        if not isinstance(data, dict) or not data:
+            print(f"Erro: Payload JSON recebido não é um dicionário ou está vazio. Tipo: {type(data)}")
+            return jsonify({"error": "Dados inválidos ou incompletos. Esperado um objeto JSON."}), 400
 
         if not data or 'paymentDetails' not in data or 'billingData' not in data:
             return jsonify({"error": "Dados inválidos ou incompletos"}), 400
@@ -190,7 +346,7 @@ def processar_pix():
 
         response = requests.post(CIELO_API_URL, headers=headers, data=json.dumps(pix_data))
         
-        # --- NOVO BLOCO: Tratamento de erro para resposta não-JSON ---
+        # --- Tratamento de erro para resposta não-JSON ---
         try:
             response_json = response.json()
         except json.JSONDecodeError:
@@ -200,18 +356,33 @@ def processar_pix():
                 "message": f"Erro inesperado da Cielo. Status: {response.status_code}. Conteúdo: {response.text[:200]}...",
                 "cielo_error": {"raw_response": response.text, "status_code": response.status_code}
             }), 502
-        # --- FIM DO NOVO BLOCO ---
+        # --- FIM DO BLOCO DE TRATAMENTO DE JSON ---
 
         print(f"Resposta da Cielo (Pix): {json.dumps(response_json, indent=2)}")
+
+        # --- MODIFICAÇÃO PRINCIPAL: Trata respostas de erro da Cielo que são LISTAS ---
+        if isinstance(response_json, list) and response_json:
+            first_error = response_json[0]
+            error_message = first_error.get('Message', 'Erro desconhecido na lista de erros da Cielo (Pix)')
+            error_code = first_error.get('Code', 'N/A')
+            return jsonify({
+                "status": "error",
+                "message": f"Erro da Cielo (Pix): {error_message} (Código: {error_code})",
+                "cielo_error": response_json
+            }), response.status_code
 
         if response.status_code == 201: # 201 Created é o esperado para sucesso na criação do Pix
             # Verifique se a string do QR Code está presente
             qr_code_string = response_json.get('Payment', {}).get('QrCodeString')
+            qr_code_image_url = response_json.get('Payment', {}).get('QrCodeImageUrl') # URL da imagem do QR Code
+            
             if qr_code_string:
                 return jsonify({
                     "status": "success",
                     "message": "QR Code Pix gerado com sucesso!",
-                    "cielo_response": response_json
+                    "cielo_response": response_json,
+                    "qr_code_string": qr_code_string,
+                    "qr_code_image_url": qr_code_image_url # Envia a URL da imagem (se houver)
                 }), 200
             else:
                 return jsonify({
@@ -227,8 +398,10 @@ def processar_pix():
             }), response.status_code
 
     except Exception as e:
-        print(f"Erro inesperado no Pix: {e}")
-        return jsonify({"status": "error", "message": str(e)}), 500
+        print(f"Erro INESPERADO na rota do PIX: {type(e).__name__}: {e}")
+        print("Detalhes completos do traceback:")
+        traceback.print_exc()
+        return jsonify({"status": "error", "message": f"Erro interno no backend. Detalhes: {str(e)}", "exception_type": type(e).__name__}), 500
 
 
 # --- ROTA PARA BOLETO ---
@@ -236,6 +409,10 @@ def processar_pix():
 def processar_boleto():
     try:
         data = request.get_json()
+
+        if not isinstance(data, dict) or not data:
+            print(f"Erro: Payload JSON recebido não é um dicionário ou está vazio. Tipo: {type(data)}")
+            return jsonify({"error": "Dados inválidos ou incompletos. Esperado um objeto JSON."}), 400
 
         if not data or 'paymentDetails' not in data or 'billingData' not in data:
             return jsonify({"error": "Dados inválidos ou incompletos"}), 400
@@ -263,9 +440,8 @@ def processar_boleto():
                     "Complement": billing_data.get('complement'),
                     "ZipCode": billing_data.get('zipCode'),
                     "District": billing_data.get('neighborhood'),
-                    # CORRIGIDO: Preencha com valores reais para testes
-                    "City": billing_data.get('city', 'SAO PAULO'),
-                    "State": billing_data.get('state', 'SP'),
+                    "City": billing_data.get('city', 'SAO PAULO'), # Sugestão: adicione 'city' ao billingData do frontend
+                    "State": billing_data.get('state', 'SP'),     # Sugestão: adicione 'state' ao billingData do frontend
                     "Country": billing_data.get('country', 'BRA')
                 }
             },
@@ -273,8 +449,8 @@ def processar_boleto():
                 "Type": "Boleto",
                 "Amount": amount_in_cents,
                 "BoletoNumber": f"000000{os.urandom(3).hex()}", # Gerar um número de boleto interno
-                "BarCodeNumber": "", # A Cielo preenche
-                "DigitableLine": "", # A Cielo preenche
+                # "BarCodeNumber": "", # A Cielo preenche (Não enviar no request)
+                # "DigitableLine": "", # A Cielo preenche (Não enviar no request)
                 "Demonstrative": "Pagamento referente à compra na Livraria Web",
                 "Instructions": "Não receber após o vencimento",
                 "Provider": "Bradesco", # Exemplo: Cielo aceita vários bancos, verifique a docs
@@ -292,7 +468,7 @@ def processar_boleto():
 
         response = requests.post(CIELO_API_URL, headers=headers, data=json.dumps(boleto_data))
         
-        # --- NOVO BLOCO: Tratamento de erro para resposta não-JSON ---
+        # --- Tratamento de erro para resposta não-JSON ---
         try:
             response_json = response.json()
         except json.JSONDecodeError:
@@ -302,18 +478,35 @@ def processar_boleto():
                 "message": f"Erro inesperado da Cielo. Status: {response.status_code}. Conteúdo: {response.text[:200]}...",
                 "cielo_error": {"raw_response": response.text, "status_code": response.status_code}
             }), 502
-        # --- FIM DO NOVO BLOCO ---
+        # --- FIM DO BLOCO DE TRATAMENTO DE JSON ---
 
         print(f"Resposta da Cielo (Boleto): {json.dumps(response_json, indent=2)}")
 
+        # --- MODIFICAÇÃO PRINCIPAL: Trata respostas de erro da Cielo que são LISTAS ---
+        if isinstance(response_json, list) and response_json:
+            first_error = response_json[0]
+            error_message = first_error.get('Message', 'Erro desconhecido na lista de erros da Cielo (Boleto)')
+            error_code = first_error.get('Code', 'N/A')
+            return jsonify({
+                "status": "error",
+                "message": f"Erro da Cielo (Boleto): {error_message} (Código: {error_code})",
+                "cielo_error": response_json
+            }), response.status_code
+
         if response.status_code == 201: # 201 Created é o esperado para sucesso na criação do Boleto
-            # Verifique se a URL do boleto está presente
+            # Verifique se a URL do boleto está presente (BarCodeNumber e DigitableLine também virão)
             boleto_url = response_json.get('Payment', {}).get('Url')
+            bar_code_number = response_json.get('Payment', {}).get('BarCodeNumber')
+            digitable_line = response_json.get('Payment', {}).get('DigitableLine')
+
             if boleto_url:
                 return jsonify({
                     "status": "success",
                     "message": "Boleto gerado com sucesso!",
-                    "cielo_response": response_json
+                    "cielo_response": response_json,
+                    "boleto_url": boleto_url,
+                    "bar_code_number": bar_code_number,
+                    "digitable_line": digitable_line
                 }), 200
             else:
                 return jsonify({
@@ -329,8 +522,10 @@ def processar_boleto():
             }), response.status_code
 
     except Exception as e:
-        print(f"Erro inesperado no Boleto: {e}")
-        return jsonify({"status": "error", "message": str(e)}), 500
+        print(f"Erro INESPERADO na rota do BOLETO: {type(e).__name__}: {e}")
+        print("Detalhes completos do traceback:")
+        traceback.print_exc()
+        return jsonify({"status": "error", "message": f"Erro interno no backend. Detalhes: {str(e)}", "exception_type": type(e).__name__}), 500
 
 if __name__ == '__main__':
     # No ambiente local de desenvolvimento, este trecho é executado

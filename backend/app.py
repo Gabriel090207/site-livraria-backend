@@ -24,7 +24,7 @@ CORS(app, resources={r"/*": {"origins": [
 # caso as variáveis de ambiente não estejam definidas no seu sistema.
 # No Render, você definirá essas variáveis na interface.
 MERCHANT_ID = os.getenv("CIELO_MERCHANT_ID", "6542d0f6-f606-440b-a96e-7fd5a4ec8155")
-MERCHANT_KEY = os.getenv("CIELO_MERCHANT_KEY", "VHMAvxtYBypBBeKhEsz28NDH1JF0NshheALbnUch")
+MERCHANT_KEY = os.getenv("CIELO_MERCHANT_KEY", "eVMfHMRlgw0oQAMTHUI5PrfO22ub03TBvISo3oEF")
 
 # URLs da API Cielo (ATENÇÃO: VERIFIQUE SE SÃO DE SANDBOX OU PRODUÇÃO NO RENDER!)
 CIELO_API_URL = os.getenv("CIELO_API_URL", "https://api.cieloecommerce.cielo.com.br/1/sales/")

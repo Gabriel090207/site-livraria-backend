@@ -14,7 +14,7 @@ CORS(app, resources={r"/*": {"origins": [
     "http://localhost:5500",  # Sua máquina (Live Server)
     "http://127.0.0.1:5500",  # Sua máquina (Live Server)
     "http://localhost:5000",  # Porta padrão do Flask se rodar sem Live Server
-    "http://127.0.0.1:5000",  # Porta padrão do Flask
+    "http://127.0.0.1:5501",  # Porta padrão do Flask
     "file://",                # Para arquivos HTML abertos diretamente do disco
     "null"                    # Outra origem para arquivos abertos diretamente do disco (Chrome)
 ]}})
